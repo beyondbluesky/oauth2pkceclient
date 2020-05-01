@@ -1,0 +1,8 @@
+
+services:
+    oauth2_pkce_client:
+        class: BeyondBlueSky\DependencyInjector\OAuth2PKCEClientExtension
+        public: false
+        arguments:  ['@doctrine.orm.entity_manager', '@service_container']
+        
+        
