@@ -65,6 +65,15 @@ class OAuth2ClientExtension extends Extension {
                 
     }
     
+    public function getContainerExtension()
+    {
+        return new OAuth2PKCEClientExtension();
+    }
+    
+    public function getAlias(){
+        return "oauth2_pkce_client";
+    }
+    
     public function setClientType(int $clientType){
         $this->clientType = $clientType;
     }
