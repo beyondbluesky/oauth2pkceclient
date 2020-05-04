@@ -23,15 +23,12 @@ To install it you need to follow the following stemps:
 
 1. Download the latest version of the bundle
 
-.. code-block:: bash
+```bash
 $ composer require beyondbluesky/oauth2-pkce-client 
-
-.. note::
-The installation will be automatic when used.
-
+```
 2. Configure the endpoints of your OAuth2 server with a file at config/packages named oauth2_pkce_client:
 
-.. code-block:: yaml
+```yaml
 oauth2_pkce_client:
     server_uris:
         auth_uri:   https://oauth2.localnet/oauth2/auth
@@ -42,11 +39,12 @@ oauth2_pkce_client:
         secret: secret provided from our oauth2 server
         grants: 'authorization_code,user_info,user_auth'
         redirect_uri: https://oauth2client.localnet/oauth2/check
+```
 
 3. Create a Controller to receive the tokens, that has to match the redirect_uri path. Following we provide an example code for you to adapt:
 
-..code-block:: php
-<?php
+```php
+
 namespace App\Controller;
 
 use Symfony\Component\Routing\Annotation\Route;
@@ -95,6 +93,7 @@ class OAuth2Controller extends AbstractController
     }
     
 }
+```
 
 4. Create a user class. The minimum information should be the username. All other fields are optional and filled in the point 5 of this guide. In our case we'll create a Security\User inside the Entity folder.
 
@@ -102,8 +101,7 @@ class OAuth2Controller extends AbstractController
 
 5. Now we need a new Authenticator. Use to following code as a template:
 
-..code-block:: php
-<?php
+```php
 
 namespace App\Security;
 
@@ -160,29 +158,32 @@ class OAuth2Authenticator extends OAuth2PKCEAuthenticator
         return $user;   
     }   
 }
+```
 
 6. Update your database schema: schema:update or doctrine:migrations, your choice.
 
-..code-block:: bash
+```sh
 $ bin/console doctrine:schema:update --force
+```
 
 7. Configure the security.yaml to point to our new authenticator
 
 On the providers section replace the in-memory line for:
-..code-block:: yaml
+```yaml
         oauth_user_provider:
             entity:
                 class: App\Entity\Security\User
                 property: username
-
+```
 And on firewalls > main refer to your new user provider and add our authenticator created at step 5:
-..code-block:: yaml
+```yaml
     firewalls:
         main:
             provider: oauth_user_provider
             guard:
                 authenticators:
                     - App\Security\OAuth2Authenticator
+```
 
 8. Enjoy your new OAuth2 authentication! For that go to your Symfony root on a browser and add a oauth2/login to the URL (if you didn't change the
 paths on the OAuth2Controller). Now you should see the login page of your OAuth2 server.
