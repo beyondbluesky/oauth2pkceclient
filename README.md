@@ -37,7 +37,7 @@ oauth2_pkce_client:
     client:
         id: client_id_provided from our oauth2 server
         secret: secret provided from our oauth2 server
-        grants: 'authorization_code,user_info,user_auth'
+        scope: 'authorization_code,user_info,user_auth'
         redirect_uri: https://oauth2client.localnet/oauth2/check
 ```
 
