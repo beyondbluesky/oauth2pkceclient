@@ -43,8 +43,8 @@ oauth2_pkce_client:
 
 3. Create a Controller to receive the tokens, that has to match the redirect_uri path. Following we provide an example code for you to adapt:
 
+|src/Controller/OAuth2Controller.php|
 ```php
-
 namespace App\Controller;
 
 use Symfony\Component\Routing\Annotation\Route;
@@ -109,6 +109,7 @@ That will generate an ORM configured entity with all the information needed.
 
 5. Now we need a new Authenticator. Use to following code as a template:
 
+|src/Security/OAuth2Authenticator.php|
 ```php
 
 namespace App\Security;
@@ -177,6 +178,7 @@ $ bin/console doctrine:schema:update --force
 7. Configure the security.yaml to point to our new authenticator
 
 On the providers section replace the in-memory line for:
+|config/packages/security.yaml|
 ```yaml
         oauth_user_provider:
             entity:
