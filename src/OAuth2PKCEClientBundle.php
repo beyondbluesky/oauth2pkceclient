@@ -20,13 +20,13 @@ class OAuth2PKCEClientBundle extends Bundle
      * Overridden to allow for the custom extension alias.
      *
      * @return KnpUOAuth2ClientExtension
-     *
+     */
     public function getContainerExtension()
     {
         if (null === $this->extension) {
-            return new OAuth2PKCEExtension();
+            return new OAuth2PKCEClientExtension();
         }
 
         return $this->extension;
-    }*/
+    }
 }
