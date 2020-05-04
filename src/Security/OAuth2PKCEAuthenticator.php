@@ -13,23 +13,18 @@
 
 namespace BeyondBlueSky\OAuth2PKCEClient\Security;
 
-use BeyondBlueSky\Entity\User;
-use App\Entity\Security\OAuth2Session;
-use App\Repository\OAuth2SessionRepository;
-
-use Doctrine\ORM\EntityManagerInterface;
-
-
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 
-use Symfony\Component\Routing\RouterInterface;
-use Symfony\Component\Security\Core\User\UserProviderInterface;
+use BeyondBlueSky\OAuth2PKCEClient\Entity\User;
+use BeyondBlueSky\OAuth2PKCEClient\Entity\OAuth2Session;
 
-use App\Service\OAuth2ClientService;
+use BeyondBlueSky\OAuth2PKCEClient\Repository\OAuth2SessionRepository;
+use BeyondBlueSky\OAuth2PKCEClient\DependencyInjection\OAuth2PKCEClientExtension as OAuth2PKCEClient;
 
 /**
  * Abstrct class that has to implement 2 basic methods in order to authenticate 
@@ -38,15 +33,15 @@ use App\Service\OAuth2ClientService;
  *  - supports(): Validates that the path for the remote auth call to start authentication is correct.
  *  - getUser():  Called by the redirectUri to fetch the access token and user authenticated.
  */
-abstract class OAuth2Authenticator extends AbstractGuardAuthenticator
+abstract class OAuth2PKCEAuthenticator extends AbstractGuardAuthenticator
 {
     protected $server;
     protected $sessionRepo;
     
-    public function __construct(OAuth2ClientService $oauth2, OAuth2SessionRepository $sessionRepo)
+    public function __construct(OAuth2PKCEClient $oauth2)
     {
         $this->server = $oauth2;
-        $this->sessionRepo = $sessionRepo;
+        $this->sessionRepo = $oauth2->getSessionRepository();
         
     }
 
@@ -84,7 +79,7 @@ abstract class OAuth2Authenticator extends AbstractGuardAuthenticator
      * @param UserProviderInterface $userProvider
      * @return User
      */
-    abstract function getUser($credentials, UserProviderInterface $userProvider);
+    public abstract function getUser($credentials, UserProviderInterface $userProvider);
 
 
     public function checkCredentials($credentials, UserInterface $user): bool

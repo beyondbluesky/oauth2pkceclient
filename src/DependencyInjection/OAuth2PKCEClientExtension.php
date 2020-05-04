@@ -11,7 +11,6 @@
  *  file that was distributed with this source code.
  */
 
-
 namespace BeyondBlueSky\OAuth2PKCEClient\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -20,12 +19,15 @@ use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\Config\FileLocator;
 
-
-use BeyondBlueSky\Entity\OAuth2Session;
-
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
-class OAuth2ClientExtension extends Extension {
+use BeyondBlueSky\OAuth2PKCEClient\Entity\OAuth2Session;
+use BeyondBlueSky\OAuth2PKCEClient\Repository\OAuth2SessionRepository;
+
+/**
+ * This service gives an interface to an OAuth2 PKCE compliant server
+ */
+class OAuth2PKCEClientExtension extends Extension {
     
     public static $CLIENT_TYPE_BASIC= 0;
     public static $CLIENT_TYPE_PKCE= 1;
@@ -38,8 +40,19 @@ class OAuth2ClientExtension extends Extension {
     private $ownerServerUri;
     
     private $redirectUri;
+    private $scope;
     
     private $clientType;
+    
+    private $sessionRepo;
+    
+    public function __construct(array $server_uris= [], array $client=[], OAuth2SessionRepository $sessionRepo= null ) {
+        if( sizeof($client) > 0 && sizeof($server_uris) > 0 ){
+            $this->loadConfig(['server_uris'=> $server_uris, 'client'=> $client]);
+        }
+        $this->sessionRepo = $sessionRepo;
+        
+    }
     
     public function load(array $configs, ContainerBuilder $container)
     {
@@ -49,27 +62,37 @@ class OAuth2ClientExtension extends Extension {
             );
         $loader->load('services.yml');
         
-        
         $configuration = new Configuration();
-
         $config = $this->processConfiguration($configuration, $configs);
 
+        $definition = $container->getDefinition(OAuth2PKCEClientExtension::class);
+        $definition->replaceArgument(0, $config['server_uris'] );
+        $definition->replaceArgument(1, $config['client']);
         
+    }
+    
+    
+    public function getSessionRepository():? OAuth2SessionRepository {
+        return $this->sessionRepo;
+    }
+    
+    private function loadConfig(array $config){
         $this->clientId       = $config['client']['id'];
         $this->clientSecret   = $config['client']['secret'];
         $this->redirectUri    = $config['client']['redirect_uri'];
+        $this->scope          = $config['client']['scope'];
         
-        $this->authServerUri  = $config['server_uris']['auth'];
-        $this->tokenServerUri = $config['server_uris']['token'];
-        $this->ownerServerUri = $config['server_uris']['owner'];
-                
+        $this->authServerUri  = $config['server_uris']['auth_uri'];
+        $this->tokenServerUri = $config['server_uris']['token_uri'];
+        $this->ownerServerUri = $config['server_uris']['owner_uri'];
+             
     }
-    
+    /*
     public function getContainerExtension()
     {
         return new OAuth2PKCEClientExtension();
     }
-    
+    */
     public function getAlias(){
         return "oauth2_pkce_client";
     }
@@ -91,7 +114,7 @@ class OAuth2ClientExtension extends Extension {
         $response= new RedirectResponse($this->authServerUri.'?'.$this->encodeParams([
             'client_id'=> $this->clientId,
             'redirect_uri'=> $this->redirectUri,
-            'scope'=> 'authorization_code,user_info,user_auth',
+            'scope'=> $this->scope,
             'code_challenge'=> $challenge,
             'code_challenge_method'=> 'S256',
             'state' => $state,
@@ -123,7 +146,11 @@ class OAuth2ClientExtension extends Extension {
          *  ["resource_owner_id"]=> string(13) "test@test.com" 
          * } 
          */
-        return json_decode($response);
+        $jsonResponse = json_decode($response);
+        if( $jsonResponse == null ){
+            throw new Exception($response);
+        }  
+        return $jsonResponse;
         
     }
     

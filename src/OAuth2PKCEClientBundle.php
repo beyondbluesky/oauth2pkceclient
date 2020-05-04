@@ -11,7 +11,7 @@
 
 namespace BeyondBlueSky\OAuth2PKCEClient;
 
-use BeyondBlueSky\OAuth2PKCEClientBundle\DependencyInjection\OAuth2PKCEClientExtension;
+use BeyondBlueSky\OAuth2PKCEClient\DependencyInjection\OAuth2PKCEClientExtension;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class OAuth2PKCEClientBundle extends Bundle

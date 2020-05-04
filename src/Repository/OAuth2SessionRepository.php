@@ -14,7 +14,7 @@
 
 namespace BeyondBlueSky\OAuth2PKCEClient\Repository;
 
-use BeyondBlueSky\Entity\OAuth2Session;
+use BeyondBlueSky\OAuth2PKCEClient\Entity\OAuth2Session;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;

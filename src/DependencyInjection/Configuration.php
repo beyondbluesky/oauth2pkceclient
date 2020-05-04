@@ -35,18 +35,20 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('owner_uri')->end()
                         //->booleanNode('tlsEnabled')->info('Use if you want a TLS Client cert connection')->end()
                     ->end()
+                ->end()
                 ->arrayNode('client')
                     ->addDefaultsIfNotSet()
                     ->children()
                         ->scalarNode('id')->end()
                         ->scalarNode('secret')->end()
                         ->scalarNode('redirect_uri')->end()
+                        ->scalarNode('scope')->end()
                     ->end()
                 ->end()
             ->end()
             ->validate()
                 ->ifTrue(function ($v) {
-                    return isset($v['server_uris'], $v['client']);
+                    return ! isset($v['server_uris'], $v['client']);
                 })
                 ->thenInvalid('Missing parameters.')
             ->end()

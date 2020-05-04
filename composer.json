@@ -35,6 +35,11 @@
             "dev-master": "0.1-dev"
         }
     },
+    "autoload": {
+        "psr-4" : {
+            "BeyondBlueSky\\OAuth2PKCEClient\\" : "src/"
+        }
+    },
     "bin": [
     ]
 }

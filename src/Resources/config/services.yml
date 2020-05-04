@@ -1,8 +1,13 @@
 
 services:
-    oauth2_pkce_client:
-        class: BeyondBlueSky\DependencyInjector\OAuth2PKCEClientExtension
-        public: false
-        arguments:  ['@doctrine.orm.entity_manager', '@service_container']
+    BeyondBlueSky\OAuth2PKCEClient\Repository\OAuth2SessionRepository:
+        class: BeyondBlueSky\OAuth2PKCEClient\Repository\OAuth2SessionRepository
+        public: true
+        autowire: true
+    BeyondBlueSky\OAuth2PKCEClient\DependencyInjection\OAuth2PKCEClientExtension:
+        class: BeyondBlueSky\OAuth2PKCEClient\DependencyInjection\OAuth2PKCEClientExtension
+        public: true
+        autowire: true
+        arguments:  ['server_uris','client', '@BeyondBlueSky\OAuth2PKCEClient\Repository\OAuth2SessionRepository']
         
         
