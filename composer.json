@@ -35,16 +35,6 @@
             "dev-master": "0.1-dev"
         }
     },
-    "autoload": {
-        "psr-4" : {
-            "BeyondBlueSky\\OAuth2PKCEClient\\OAuth2PKCEClientBundle" : "src"
-        }
-    },
-    "autoload-dev": {
-        "psr-4" : {
-            "BeyondBlueSky\\OAuth2PKCEClient\\OAuth2PKCEClientBundle" : "src"
-        }
-    },
     "bin": [
     ]
 }
