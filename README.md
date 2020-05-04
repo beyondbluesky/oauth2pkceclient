@@ -6,12 +6,12 @@ This Symfony bundle allows a Symfony4/5 installation authenticate it's users aga
 The PKCE extension RFC-7636 (https://tools.ietf.org/html/rfc7636) adds additional security to the OAuth2 protocol and it will be mandatory on future versions of OAuth2.
 
 This implementation requires the generation of: 
-    - An Authenticator
-    - A Controller to receive the response from the OAuth2 Server
-    - A table to store the session information (oauth2_session). The table is used to store the session information, including the challenge and verifier strings, used to secure the communication as part
+- An Authenticator
+- A Controller to receive the response from the OAuth2 Server
+- A table to store the session information (oauth2_session). The table is used to store the session information, including the challenge and verifier strings, used to secure the communication as part
 of the PKCE extension. 
-    - The required config file where we'll store the client_id, oauth2 uris, etc.
-    - The modification of security.yml to include all the previous configuration
+- The required config file where we'll store the client_id, oauth2 uris, etc.
+- The modification of security.yml to include all the previous configuration
 
 Following you'll find all the steps to configure it. Don't worry...
 
