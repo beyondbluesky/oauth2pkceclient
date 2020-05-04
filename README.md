@@ -95,9 +95,17 @@ class OAuth2Controller extends AbstractController
 }
 ```
 
-4. Create a user class. The minimum information should be the username. All other fields are optional and filled in the point 5 of this guide. In our case we'll create a Security\User inside the Entity folder.
+4. Create a user class. The minimum information should be the username. All other 
+fields are optional and filled in the point 5 of this guide. In our case we'll create a Security\User inside the Entity folder.
 
+If you are new to this, I highly recommend to use the command 
 
+```bash
+$ bin/console make:entity
+```
+
+And follow the questions asked, adding the username field and all the fields you need for your project. 
+That will generate an ORM configured entity with all the information needed.
 
 5. Now we need a new Authenticator. Use to following code as a template:
 
