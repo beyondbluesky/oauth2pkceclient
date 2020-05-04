@@ -28,6 +28,7 @@ $ composer require beyondbluesky/oauth2-pkce-client
 ```
 2. Configure the endpoints of your OAuth2 server with a file at config/packages named oauth2_pkce_client:
 
+| config/packages/oauth2_pkce_client.yaml |
 ```yaml
 oauth2_pkce_client:
     server_uris:
@@ -43,7 +44,7 @@ oauth2_pkce_client:
 
 3. Create a Controller to receive the tokens, that has to match the redirect_uri path. Following we provide an example code for you to adapt:
 
-|src/Controller/OAuth2Controller.php|
+| src/Controller/OAuth2Controller.php |
 ```php
 namespace App\Controller;
 
@@ -109,7 +110,7 @@ That will generate an ORM configured entity with all the information needed.
 
 5. Now we need a new Authenticator. Use to following code as a template:
 
-|src/Security/OAuth2Authenticator.php|
+| src/Security/OAuth2Authenticator.php |
 ```php
 
 namespace App\Security;
@@ -178,7 +179,7 @@ $ bin/console doctrine:schema:update --force
 7. Configure the security.yaml to point to our new authenticator
 
 On the providers section replace the in-memory line for:
-|config/packages/security.yaml|
+| config/packages/security.yaml |
 ```yaml
         oauth_user_provider:
             entity:
