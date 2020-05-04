@@ -29,6 +29,8 @@ $ composer require beyondbluesky/oauth2-pkce-client
 2. Configure the endpoints of your OAuth2 server with a file at config/packages named oauth2_pkce_client:
 
 | config/packages/oauth2_pkce_client.yaml |
+| --- | --- |
+
 ```yaml
 oauth2_pkce_client:
     server_uris:
