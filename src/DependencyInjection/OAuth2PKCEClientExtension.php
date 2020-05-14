@@ -101,7 +101,7 @@ class OAuth2PKCEClientExtension extends Extension {
         $this->clientType = $clientType;
     }
 
-    public function getAuthRedirect(OAuth2Session $session) {
+    public function getAuthRedirect(OAuth2Session $session, array $extraParameters= [] ) {
 
         $verifier = $this->generateCodeVerifier();
         $challenge = $this->getCodeChallenge($verifier);
@@ -111,14 +111,21 @@ class OAuth2PKCEClientExtension extends Extension {
         $session->setCodeChallenge($challenge);
         $session->setState($state);
         
-        $response= new RedirectResponse($this->authServerUri.'?'.$this->encodeParams([
+        $basicConfig= [
             'client_id'=> $this->clientId,
             'redirect_uri'=> $this->redirectUri,
             'scope'=> $this->scope,
             'code_challenge'=> $challenge,
             'code_challenge_method'=> 'S256',
             'state' => $state,
-            ]));     
+            ];     
+        
+        // We exclude the standard parameters already defined at basic Config
+        $cleanExtraConfig = array_diff( $extraParameters, $basicConfig);
+        // We merge the remaining params to the final config parameters.
+        $config = array_merge( $basicConfig, $cleanExtraConfig);
+        
+        $response= new RedirectResponse($this->authServerUri.'?'.$this->encodeParams($config) );
         
         return $response;
     }
