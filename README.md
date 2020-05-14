@@ -105,10 +105,18 @@ If you are new to this, I highly recommend to use the command
 $ bin/console make:entity
 ```
 
+Once you have created your user, edit it and implement the UserInterface interface to tell Symfony your user entity is a Symfony User:
+
+```php
+class User implements \Symfony\Component\Security\Core\User\UserInterface
+
+```
+
 And follow the questions asked, adding the username field and all the fields you need for your project. 
 That will generate an ORM configured entity with all the information needed.
 
-5. Now we need a new Authenticator. Use to following code as a template:
+5. Now we need a new Authenticator. Use to following code as a template. Take into consideration the getUser function, you'll have to fill your user object with the fields that you'll receive from your OAuth2 server.
+Yo can var_dump the oauthUser if you are not sure what you are receiving:
 
 src/Security/OAuth2Authenticator.php:
 ```php
