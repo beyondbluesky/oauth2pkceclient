@@ -111,6 +111,9 @@ abstract class OAuth2PKCEAuthenticator extends AbstractGuardAuthenticator
         
         $res= $this->fetchAccessToken($session, $code);
         
+        // We store the access_token into the session of the user
+        $request->getSession()->set('accessToken', $res->access_token );
+        
         return $res;
     }
 
