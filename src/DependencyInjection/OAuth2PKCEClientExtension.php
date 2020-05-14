@@ -148,7 +148,7 @@ class OAuth2PKCEClientExtension extends Extension {
          */
         $jsonResponse = json_decode($response);
         if( $jsonResponse == null ){
-            throw new Exception($response);
+            throw new \Exception($response);
         }  
         return $jsonResponse;
         
