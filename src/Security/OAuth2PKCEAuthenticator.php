@@ -25,7 +25,7 @@ use BeyondBlueSky\OAuth2PKCEClient\Entity\OAuth2Session;
 use BeyondBlueSky\OAuth2PKCEClient\DependencyInjection\OAuth2PKCEClientExtension as OAuth2PKCEClient;
 
 /**
- * Abstrct class that has to implement 2 basic methods in order to authenticate 
+ * Abstract class that has to implement 2 basic methods in order to authenticate 
  * via OAuth2:
  * 
  *  - supports(): Validates that the path for the remote auth call to start authentication is correct.
