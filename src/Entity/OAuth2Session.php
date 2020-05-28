@@ -49,7 +49,17 @@ class OAuth2Session {
      * @var string
      */
     private $codeVerifier;
-    
+       
+    /**
+     * @ORM\Column(type="string", length=4096, nullable=true)
+     */
+    private $accessToken;
+
+    /**
+     * @ORM\Column(type="string", length=4096, nullable=true)
+     */
+    private $refreshToken;
+
     public function setState($state){
         $this->state = $state;
         
@@ -79,5 +89,28 @@ class OAuth2Session {
     public function getCodeVerifier(){
         return $this->codeVerifier;
     }
-        
+     
+    public function getAccessToken(): ?string
+    {
+        return $this->accessToken;
+    }
+
+    public function setAccessToken(?string $accessToken): self
+    {
+        $this->accessToken = $accessToken;
+
+        return $this;
+    }
+
+    public function getRefreshToken(): ?string
+    {
+        return $this->refreshToken;
+    }
+
+    public function setRefreshToken(string $refreshToken): self
+    {
+        $this->refreshToken = $refreshToken;
+
+        return $this;
+    }
 }

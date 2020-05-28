@@ -24,6 +24,8 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use BeyondBlueSky\OAuth2PKCEClient\Entity\OAuth2Session;
 use BeyondBlueSky\OAuth2PKCEClient\Repository\OAuth2SessionRepository;
 
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
+
 /**
  * This service gives an interface to an OAuth2 PKCE compliant server
  */
@@ -51,7 +53,7 @@ class OAuth2PKCEClientExtension extends Extension {
             $this->loadConfig(['server_uris'=> $server_uris, 'client'=> $client]);
         }
         $this->sessionRepo = $sessionRepo;
-        
+       
     }
     
     public function load(array $configs, ContainerBuilder $container)
@@ -158,6 +160,43 @@ class OAuth2PKCEClientExtension extends Extension {
             throw new \Exception($response);
         }  
         return $jsonResponse;
+        
+    }
+    
+    public function refreshToken(SessionInterface $session){
+        $refreshToken = $session->get('refreshToken');
+    
+        $header= ['Authorization'=> 'Basic '.base64_encode($this->clientId.":".$this->clientSecret)];
+        
+        $paramArray = [
+            'grant_type'    => 'refresh_token',
+            'client_id'     => $this->clientId,
+            'client_secret' => $this->clientSecret,
+            'redirect_uri'  => $this->redirectUri,
+            'refresh_token' => $refreshToken,   
+        ];
+        
+        $response= $this->post($this->tokenServerUri, $header, $this->encodeParams($paramArray));
+        /* Response: 
+         * { 
+         *  ["access_token"]=> string(256) "9M37DDYNo8ehL8LBy1xfwSKB1mUzHGTofi1sA2nJRp8YqwYdhNHHMk8N0Mx6VXrFIDiT12MPiMWxEcdNsy8FPxDgTnGx2w7M7Ch78BTTKNxfm5wT0sqpD6cM2oQXxZLQauJyfRoifNasEeMWTWley3JfyTukW5XFATqe0sB9aaCmFHrFXOOTJjUWBIS9gRRmeymtbCTB9OlIR8IaKs1F3YnMsJdNub4vQs1CDQs8Kq2E3xZl1Edt7Lz5yOxGJKK7" 
+         *  ["refresh_token"]=> string(256) "cD00hcBZaUDIODOwUKXcEpvdzGJTAvX2WlUT9xOCjv3BsXXFzo20HqcMV2tF6u2d5gDRhYPAYapHNFdem9Ia1pvGfqvbxhBvULhHAZqqLL0A5ffoEN70dgGbR7WyQCjElvJ1O8uWCEmGDIoTZznrYZITkm8i12QBl3C6Fq5sNojt5ojW0iYVS00QLkJseOK4ZvRPb0dQDdZxLP7iI26NhSInaDTNdeSTkNriZqYh520Kf3NmXik55yvD08oWO3za" 
+         *  ["expires_in"]=> int(300) 
+         *  ["resource_owner_id"]=> string(13) "test@test.com" 
+         * } 
+         */
+        $jsonResponse = json_decode($response);
+        if( $jsonResponse == null ){
+            throw new \Exception($response);
+        }  
+        
+        if( ! isset($jsonResponse->access_token) ){
+            throw new \Exception('Wrong response from server: '.$response);
+        }
+        $session->set('accessToken', $jsonResponse->access_token);
+        $session->set('refreshToken', $jsonResponse->refresh_token);
+        
+        return $session;
         
     }
     

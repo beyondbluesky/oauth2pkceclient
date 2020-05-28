@@ -13,6 +13,8 @@
 
 namespace BeyondBlueSky\OAuth2PKCEClient\Security;
 
+use Doctrine\ORM\EntityManagerInterface;
+
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
@@ -20,7 +22,6 @@ use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 
-use BeyondBlueSky\OAuth2PKCEClient\Entity\User;
 use BeyondBlueSky\OAuth2PKCEClient\Entity\OAuth2Session;
 
 use BeyondBlueSky\OAuth2PKCEClient\Repository\OAuth2SessionRepository;
@@ -35,12 +36,20 @@ use BeyondBlueSky\OAuth2PKCEClient\DependencyInjection\OAuth2PKCEClientExtension
  */
 abstract class OAuth2PKCEAuthenticator extends AbstractGuardAuthenticator
 {
+    /**
+     *
+     * @var OAuth2PKCEClient
+     */
     protected $server;
+    
+    protected $em;
+    
     protected $sessionRepo;
     
-    public function __construct(OAuth2PKCEClient $oauth2)
+    public function __construct(OAuth2PKCEClient $oauth2, EntityManagerInterface $em )
     {
         $this->server = $oauth2;
+        $this->em = $em;
         $this->sessionRepo = $oauth2->getSessionRepository();
         
     }
@@ -110,9 +119,13 @@ abstract class OAuth2PKCEAuthenticator extends AbstractGuardAuthenticator
         }
         
         $res= $this->fetchAccessToken($session, $code);
+        $session->setAccessToken($res->access_token);
+        $session->setRefreshToken($res->refresh_token);
+        $this->em->flush();
         
         // We store the access_token into the session of the user
         $request->getSession()->set('accessToken', $res->access_token );
+        $request->getSession()->set('refreshToken', $res->refresh_token );
         
         return $res;
     }
@@ -144,6 +157,11 @@ abstract class OAuth2PKCEAuthenticator extends AbstractGuardAuthenticator
         
         return $this->server->getOwner($credentials->access_token);
         
+    }
+    
+    protected function refreshAccessToken(OAuth2Session $session ){
+        //$refresh = 
+        return $this->server->refreshToken( $session->getRefreshToken() );
     }
     
     /**
