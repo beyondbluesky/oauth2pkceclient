@@ -17,14 +17,11 @@ use Doctrine\ORM\EntityManagerInterface;
 
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
-use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 
 use BeyondBlueSky\OAuth2PKCEClient\Entity\OAuth2Session;
-
-use BeyondBlueSky\OAuth2PKCEClient\Repository\OAuth2SessionRepository;
 use BeyondBlueSky\OAuth2PKCEClient\DependencyInjection\OAuth2PKCEClientExtension as OAuth2PKCEClient;
 
 /**
@@ -34,7 +31,7 @@ use BeyondBlueSky\OAuth2PKCEClient\DependencyInjection\OAuth2PKCEClientExtension
  *  - supports(): Validates that the path for the remote auth call to start authentication is correct.
  *  - getUser():  Called by the redirectUri to fetch the access token and user authenticated.
  */
-abstract class OAuth2PKCEAuthenticator extends AbstractGuardAuthenticator
+abstract class OAuth2PKCEAuthenticator extends OAuth2AbstractAuthenticator
 {
     /**
      *
