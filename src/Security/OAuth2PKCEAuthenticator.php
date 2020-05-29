@@ -23,6 +23,7 @@ use Symfony\Component\HttpFoundation\Request;
 
 use BeyondBlueSky\OAuth2PKCEClient\Entity\OAuth2Session;
 use BeyondBlueSky\OAuth2PKCEClient\DependencyInjection\OAuth2PKCEClientExtension as OAuth2PKCEClient;
+use BeyondBlueSky\OAuth2PKCEClient\Security\OAuth2AbstractAuthenticator;
 
 /**
  * Abstract class that has to implement 2 basic methods in order to authenticate 
