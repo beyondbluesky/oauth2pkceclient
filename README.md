@@ -158,15 +158,6 @@ use BeyondBlueSky\OAuth2PKCEClient\Security\OAuth2PKCEAuthenticator;
  */
 class OAuth2Authenticator extends OAuth2PKCEAuthenticator
 {
-    private $em;
-    
-    public function __construct(EntityManagerInterface $em, OAuth2PKCEClient $oauth2 ) {
-        $this->em = $em;
-        
-        parent::__construct($oauth2);
-        
-    }
-    
     public function supports(Request $request): bool{
         return $request->getPathInfo() == '/oauth2/check' && $request->isMethod('GET');
     }
@@ -220,6 +211,7 @@ And on firewalls > main refer to your new user provider and add our authenticato
 ```yaml
     firewalls:
         main:
+            anonymous: lazy
             provider: oauth_user_provider
             guard:
                 authenticators:
