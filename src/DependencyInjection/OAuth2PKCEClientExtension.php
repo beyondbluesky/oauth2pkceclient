@@ -40,6 +40,7 @@ class OAuth2PKCEClientExtension extends Extension {
     private $authServerUri;
     private $tokenServerUri;
     private $ownerServerUri;
+    private $ownTenantUri;
     
     private $redirectUri;
     private $scope;
@@ -88,6 +89,11 @@ class OAuth2PKCEClientExtension extends Extension {
         $this->tokenServerUri = $config['server_uris']['token_uri'];
         $this->ownerServerUri = $config['server_uris']['owner_uri'];
              
+        if( isset($config['server_uris']['owntenant_uri']) ){
+            $this->ownTenantUri = $config['server_uris']['owntenant_uri'];
+        }else {
+            $this->ownTenantUri = null;
+        }
     }
     /*
     public function getContainerExtension()
@@ -213,6 +219,21 @@ class OAuth2PKCEClientExtension extends Extension {
         
     }
     
+    public function getOwnTenant(string $accessToken):?\stdClass{
+        $response = '{}';
+        
+        if( $this->ownTenantUri != null ){
+            $header= ['Authorization'=> 'Bearer '.$accessToken ];
+
+            $paramArray = [
+                ];
+
+            $response= $this->get($this->ownTenantUri, $header, $this->encodeParams($paramArray));
+        }
+        
+        return json_decode($response);
+        
+    }
     private function get(string $url, array $headers, string $tlsCert= null, string $keyTlsCert= null){
         
         $curlOpts=  

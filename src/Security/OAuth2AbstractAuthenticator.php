@@ -78,6 +78,10 @@ abstract class OAuth2AbstractAuthenticator extends AbstractGuardAuthenticator {
         return $this->oauth->getOwner($accessToken);
     }
     
+    public function getOwnTenant(string $accessToken): \stdClass {
+        return $this->oauth->getOwnTenant($accessToken);
+    }
+    
     public function getJWToken($credentials): ?JWToken {
         
         $token= $this->getAccessToken($credentials);
