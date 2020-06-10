@@ -33,6 +33,7 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('auth_uri')->end()
                         ->scalarNode('token_uri')->end()
                         ->scalarNode('owner_uri')->end()
+                        ->scalarNode('owntenant_uri')->end()
                         //->booleanNode('tlsEnabled')->info('Use if you want a TLS Client cert connection')->end()
                     ->end()
                 ->end()
