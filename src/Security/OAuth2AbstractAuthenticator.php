@@ -26,16 +26,32 @@ use BeyondBlueSky\OAuth2PKCEClient\DependencyInjection\OAuth2PKCEClientExtension
 
 abstract class OAuth2AbstractAuthenticator extends AbstractGuardAuthenticator {
     
+    /**
+     *
+     * @var EntityManagerInterface
+     */
     protected $em;
-    private $oauth;
-    private $log;
-    private $jwt;
+    
+    /**
+     *
+     * @var OAuth2PKCEClient
+     */
+    protected $oauth;
+    
+    /**
+     *
+     * @var JWTService
+     */
+    protected $jwt;
 
-    public function __construct(EntityManagerInterface $em, OAuth2PKCEClient $oauth, JWTService $jwt)
+    protected $sessionRepo;
+    
+    public function __construct(OAuth2PKCEClient $oauth, EntityManagerInterface $em, JWTService $jwt)
     {
         $this->em = $em;
         $this->oauth = $oauth;
         $this->jwt = $jwt;
+        $this->sessionRepo = $this->oauth->getSessionRepository();  
     }
 
     /**
@@ -74,11 +90,46 @@ abstract class OAuth2AbstractAuthenticator extends AbstractGuardAuthenticator {
         return $token;
     }
     
-    public function getOwner(string $accessToken): \stdClass {
+    /**
+     * Protected function that asks for an access token
+     * 
+     * @param OAuth2Session $session
+     * @param string $code
+     * @return type
+     * @throws NoAuthCodeAuthenticationException
+     * @throws IdentityProviderAuthenticationException
+     * @throws InvalidStateAuthenticationException
+     */
+    public function fetchAccessToken(OAuth2Session $session, string $code)
+    {
+        try {
+            return $this->oauth->getToken($session->getState(), $session->getCodeVerifier(), $code );
+        } catch (MissingAuthorizationCodeException $e) {
+            throw new NoAuthCodeAuthenticationException();
+        } catch (IdentityProviderException $e) {
+            throw new IdentityProviderAuthenticationException($e);
+        } catch (InvalidStateException $e) {
+            throw new InvalidStateAuthenticationException($e);
+        }
+    }
+    
+    public function fetchUser(\StdClass $credentials){
+        
+        return $this->getOwner($credentials->access_token);
+        
+    }
+    
+    public function fetchTenant(\StdClass $credentials){
+        
+        return $this->getOwnTenant($credentials->access_token);
+        
+    }
+    
+    private function getOwner(string $accessToken): \stdClass {
         return $this->oauth->getOwner($accessToken);
     }
     
-    public function getOwnTenant(string $accessToken): \stdClass {
+    private function getOwnTenant(string $accessToken): \stdClass {
         return $this->oauth->getOwnTenant($accessToken);
     }
     
@@ -116,5 +167,8 @@ abstract class OAuth2AbstractAuthenticator extends AbstractGuardAuthenticator {
         return $isAllowed;
     }
     
-
+    public function decodeJWT(string $token): JWToken {
+        return $this->jwt->decode($token);
+    }
+    
 }

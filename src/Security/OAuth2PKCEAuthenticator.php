@@ -34,23 +34,6 @@ use BeyondBlueSky\OAuth2PKCEClient\Security\OAuth2AbstractAuthenticator;
  */
 abstract class OAuth2PKCEAuthenticator extends OAuth2AbstractAuthenticator
 {
-    /**
-     *
-     * @var OAuth2PKCEClient
-     */
-    protected $server;
-    
-    protected $em;
-    
-    protected $sessionRepo;
-    
-    public function __construct(OAuth2PKCEClient $oauth2, EntityManagerInterface $em )
-    {
-        $this->server = $oauth2;
-        $this->em = $em;
-        $this->sessionRepo = $oauth2->getSessionRepository();
-        
-    }
 
     /**
      * We have to check for the route where we place our auth call to the OAuth2 Server.
