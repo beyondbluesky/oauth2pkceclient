@@ -65,6 +65,11 @@ class OAuth2Session {
      */
     private $userId;
 
+    /**
+     * @ORM\Column(type="string", length=256, nullable=true)
+     */
+    private $audience;
+
     public function setState($state){
         $this->state = $state;
         
@@ -127,6 +132,18 @@ class OAuth2Session {
     public function setUserId(string $userId): self
     {
         $this->userId = $userId;
+
+        return $this;
+    }
+    
+    public function getAudience(): ?string
+    {
+        return $this->audience;
+    }
+
+    public function setAudience(string $audience): self
+    {
+        $this->audience = $audience;
 
         return $this;
     }

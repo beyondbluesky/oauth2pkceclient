@@ -26,6 +26,9 @@ use BeyondBlueSky\OAuth2PKCEClient\Repository\OAuth2SessionRepository;
 
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
+use BeyondBlueSky\LibJWT\Entity\JWToken;
+use BeyondBlueSky\LibJWT\DependencyInjection\JWTServiceExtension as JWTService;
+
 /**
  * This service gives an interface to an OAuth2 PKCE compliant server
  */
@@ -109,6 +112,13 @@ class OAuth2PKCEClientExtension extends Extension {
         $this->clientType = $clientType;
     }
 
+    /**
+     * This function builds the call to fetch the auth endpoint
+     * 
+     * @param OAuth2Session $session
+     * @param array $extraParameters
+     * @return RedirectResponse
+     */
     public function getAuthRedirect(OAuth2Session $session, array $extraParameters= [] ) {
 
         $verifier = $this->generateCodeVerifier();
@@ -118,6 +128,12 @@ class OAuth2PKCEClientExtension extends Extension {
         $session->setCodeVerifier($verifier);
         $session->setCodeChallenge($challenge);
         $session->setState($state);
+        
+        // Used for advanced security and multi-client authentication on same
+        // oauth server
+        if( isset($extraParameters['audience']) ){
+            $session->setAudience($extraParameters['audience']);
+        }
         
         $basicConfig= [
             'client_id'=> $this->clientId,
@@ -138,7 +154,19 @@ class OAuth2PKCEClientExtension extends Extension {
         return $response;
     }
     
-    
+    /**
+     * This function fetches the auth endpoint using a special id_token_hint 
+     * flow that allows the retrieval of a token based on another current 
+     * access_token. 
+     * 
+     * Used for multi-client access based on same oauth server.
+     * 
+     * @param OAuth2Session $session
+     * @param string $userId
+     * @param array $extraParameters
+     * @return type
+     * @throws Exception
+     */
     public function getAuthRedirectRenew(OAuth2Session $session, string $userId, array $extraParameters= [] ) {
 
         $oldSession = $this->sessionRepo->findOneBy(['userId'=>$userId]);
@@ -254,6 +282,31 @@ class OAuth2PKCEClientExtension extends Extension {
         return json_decode($response);
         
     }
+    
+    /**
+     * Using tokens already obtained from an oauth server, it fetches a URL using
+     * a token
+     * 
+     * @param string $audience
+     * @param string $userId
+     * @param string $url
+     * @param array $params
+     * @return type
+     */
+    public function getSecureUrl(string $audience, string $userId, string $url, array $params=[]){
+        $response = null;
+        
+        $session = $this->sessionRepo->findByAudience($userId, $audience);
+        if( $session ){
+            $header= ['Authorization'=> 'Bearer '.$session->getAccessToken() ];
+
+            $response= $this->get($url, $header, $this->encodeParams($params));
+        }
+        
+        return $response;                
+        
+    }
+    
     private function get(string $url, array $headers, string $tlsCert= null, string $keyTlsCert= null){
         
         $curlOpts=  

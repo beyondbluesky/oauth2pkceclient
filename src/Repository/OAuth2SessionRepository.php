@@ -40,6 +40,11 @@ class OAuth2SessionRepository extends ServiceEntityRepository
         parent::__construct($registry, OAuth2Session::class);
     }
     
+    public function findByAudience(string $userId, string $audience): ?OAuth2Session {
+        
+        return $this->findBy(['userId'=> $userId,'audience'=>$audience],['id'=>'DESC']);
+    }
+    
     // /**
     //  * @return OAuth2Session[] Returns an array of OAuth2Session objects
     //  */
