@@ -29,6 +29,8 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use BeyondBlueSky\LibJWT\Entity\JWToken;
 use BeyondBlueSky\LibJWT\DependencyInjection\JWTServiceExtension as JWTService;
 
+use BeyondBlueSky\OAuth2PKCEClient\Entity\Exception\TokenNotFoundException;
+
 /**
  * This service gives an interface to an OAuth2 PKCE compliant server
  */
@@ -297,11 +299,13 @@ class OAuth2PKCEClientExtension extends Extension {
         $response = null;
         
         $session = $this->sessionRepo->findByAudience($userId, $audience);
-        if( $session ){
-            $header= ['Authorization'=> 'Bearer '.$session->getAccessToken() ];
-
-            $response= $this->get($url, $header, $this->encodeParams($params));
+        if( ! $session ){
+            throw new TokenNotFoundException('Token not found!');
         }
+
+        $header= ['Authorization'=> 'Bearer '.$session->getAccessToken() ];
+
+        $response= $this->get($url, $header, $this->encodeParams($params));
         
         return $response;                
         
