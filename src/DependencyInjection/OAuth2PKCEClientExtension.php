@@ -138,6 +138,26 @@ class OAuth2PKCEClientExtension extends Extension {
         return $response;
     }
     
+    
+    public function getAuthRedirectRenew(OAuth2Session $session, string $userId, array $extraParameters= [] ) {
+
+        $oldSession = $this->sessionRepo->findOneBy(['userId'=>$userId]);
+        
+        if( ! $oldSession ){
+            throw new Exception('User not found');
+        }
+        $token = $oldSession->getAccessToken();
+        
+        $extraConfig= [
+            'id_token_hint'=> $token,
+            'prompt'=>'none'
+            ];     
+        
+        $extraConfig = array_merge($extraConfig, $extraParameters);
+        
+        return $this->getAuthRedirect($session, $extraConfig);
+    }
+    
     public function getToken(string $state, string $verifier, string $code){
         
         $header= ['Authorization'=> 'Basic '.base64_encode($this->clientId.":".$this->clientSecret)];

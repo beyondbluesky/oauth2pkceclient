@@ -60,6 +60,11 @@ class OAuth2Session {
      */
     private $refreshToken;
 
+    /**
+     * @ORM\Column(type="string", length=256, nullable=true)
+     */
+    private $userId;
+
     public function setState($state){
         $this->state = $state;
         
@@ -110,6 +115,18 @@ class OAuth2Session {
     public function setRefreshToken(string $refreshToken): self
     {
         $this->refreshToken = $refreshToken;
+
+        return $this;
+    }
+    
+    public function getUserId(): ?string
+    {
+        return $this->userId;
+    }
+
+    public function setUserId(string $userId): self
+    {
+        $this->userId = $userId;
 
         return $this;
     }

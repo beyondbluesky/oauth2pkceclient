@@ -19,6 +19,8 @@ use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationExc
 
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 
+use BeyondBlueSky\OAuth2PKCEClient\Entity\OAuth2Session;
+
 use BeyondBlueSky\LibJWT\Entity\JWToken;
 use BeyondBlueSky\LibJWT\DependencyInjection\JWTServiceExtension as JWTService;
 
@@ -126,7 +128,16 @@ abstract class OAuth2AbstractAuthenticator extends AbstractGuardAuthenticator {
     }
     
     private function getOwner(string $accessToken): \stdClass {
-        return $this->oauth->getOwner($accessToken);
+        $response = $this->oauth->getOwner($accessToken);
+        
+        $session = $this->sessionRepo->findOneBy(['accessToken'=> $accessToken]);
+        if( $session && $response ){
+            $session->setUserId($response->login);
+            $this->em->flush();
+        }
+        
+        return $response;
+        //return $this->oauth->getOwner($accessToken);
     }
     
     private function getOwnTenant(string $accessToken): \stdClass {

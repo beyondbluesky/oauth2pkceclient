@@ -111,35 +111,6 @@ abstract class OAuth2PKCEAuthenticator extends OAuth2AbstractAuthenticator
         return $res;
     }
 
-    /**
-     * Protected function that asks for an access token
-     * 
-     * @param OAuth2Session $session
-     * @param string $code
-     * @return type
-     * @throws NoAuthCodeAuthenticationException
-     * @throws IdentityProviderAuthenticationException
-     * @throws InvalidStateAuthenticationException
-     */
-    protected function fetchAccessToken(OAuth2Session $session, string $code)
-    {
-        try {
-            return $this->server->getToken($session->getState(), $session->getCodeVerifier(), $code );
-        } catch (MissingAuthorizationCodeException $e) {
-            throw new NoAuthCodeAuthenticationException();
-        } catch (IdentityProviderException $e) {
-            throw new IdentityProviderAuthenticationException($e);
-        } catch (InvalidStateException $e) {
-            throw new InvalidStateAuthenticationException($e);
-        }
-    }
-
-    protected function fetchUser(\StdClass $credentials){
-        
-        return $this->server->getOwner($credentials->access_token);
-        
-    }
-    
     protected function refreshAccessToken(OAuth2Session $session ){
         //$refresh = 
         return $this->server->refreshToken( $session->getRefreshToken() );
