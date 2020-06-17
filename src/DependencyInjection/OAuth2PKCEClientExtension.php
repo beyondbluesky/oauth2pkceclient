@@ -30,6 +30,7 @@ use BeyondBlueSky\LibJWT\Entity\JWToken;
 use BeyondBlueSky\LibJWT\DependencyInjection\JWTServiceExtension as JWTService;
 
 use BeyondBlueSky\OAuth2PKCEClient\Entity\Exception\TokenNotFoundException;
+use BeyondBlueSky\OAuth2PKCEClient\Entity\Exception\EmptyResponseException;
 
 /**
  * This service gives an interface to an OAuth2 PKCE compliant server
@@ -174,7 +175,7 @@ class OAuth2PKCEClientExtension extends Extension {
         $oldSession = $this->sessionRepo->findOneBy(['userId'=>$userId]);
         
         if( ! $oldSession ){
-            throw new Exception('User not found');
+            throw new TokenNotFoundException('User not found');
         }
         $token = $oldSession->getAccessToken();
         
@@ -213,7 +214,7 @@ class OAuth2PKCEClientExtension extends Extension {
          */
         $jsonResponse = json_decode($response);
         if( $jsonResponse == null ){
-            throw new \Exception($response);
+            throw new EmptyResponseException($response);
         }  
         return $jsonResponse;
         
@@ -243,7 +244,7 @@ class OAuth2PKCEClientExtension extends Extension {
          */
         $jsonResponse = json_decode($response);
         if( $jsonResponse == null ){
-            throw new \Exception($response);
+            throw new EmptyResponseException($response);
         }  
         
         if( ! isset($jsonResponse->access_token) ){
