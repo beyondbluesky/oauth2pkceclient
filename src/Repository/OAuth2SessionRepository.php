@@ -42,7 +42,7 @@ class OAuth2SessionRepository extends ServiceEntityRepository
     
     public function findByAudience(string $userId, string $audience): ?OAuth2Session {
         
-        return $this->findBy(['userId'=> $userId,'audience'=>$audience],['id'=>'DESC']);
+        return $this->findOneBy(['userId'=> $userId,'audience'=>$audience],['id'=>'DESC']);
     }
     
     // /**
