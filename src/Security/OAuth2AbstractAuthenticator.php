@@ -127,7 +127,7 @@ abstract class OAuth2AbstractAuthenticator extends AbstractGuardAuthenticator {
         
     }
     
-    private function getOwner(string $accessToken): \stdClass {
+    public function getOwner(string $accessToken): \stdClass {
         $response = $this->oauth->getOwner($accessToken);
         
         $session = $this->sessionRepo->findOneBy(['accessToken'=> $accessToken]);
