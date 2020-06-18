@@ -181,5 +181,9 @@ abstract class OAuth2AbstractAuthenticator extends AbstractGuardAuthenticator {
     public function decodeJWT(string $token): JWToken {
         return $this->jwt->decode($token);
     }
-    
+
+    private function getMyHost(Request $request): string {
+        return $request->getScheme() . '://' . $request->getHttpHost();
+    }
+        
 }

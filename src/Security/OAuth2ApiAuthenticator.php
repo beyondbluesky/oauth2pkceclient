@@ -89,9 +89,5 @@ abstract class OAuth2ApiAuthenticator extends OAuth2AbstractAuthenticator
         return false;
     }
     
-    private function getMyHost(Request $request): string {
-        return $request->getScheme() . '://' . $request->getHttpHost();
-    }
-    
 
 }
