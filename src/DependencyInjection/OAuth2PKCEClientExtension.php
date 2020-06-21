@@ -192,6 +192,7 @@ class OAuth2PKCEClientExtension extends Extension {
     public function getToken(string $state, string $verifier, string $code){
         
         $header= ['Authorization'=> 'Basic '.base64_encode($this->clientId.":".$this->clientSecret)];
+        $header= ['Authorization2'=> 'Basic '.base64_encode($this->clientId.":".$this->clientSecret)];
         
         $paramArray = [
             'grant_type'    => 'authorization_code',
@@ -224,6 +225,7 @@ class OAuth2PKCEClientExtension extends Extension {
         $refreshToken = $session->get('refreshToken');
     
         $header= ['Authorization'=> 'Basic '.base64_encode($this->clientId.":".$this->clientSecret)];
+        $header= ['Authorizatio2'=> 'Basic '.base64_encode($this->clientId.":".$this->clientSecret)];
         
         $paramArray = [
             'grant_type'    => 'refresh_token',
@@ -260,6 +262,7 @@ class OAuth2PKCEClientExtension extends Extension {
     public function getOwner(string $accessToken):?\stdClass{
         
         $header= ['Authorization'=> 'Bearer '.$accessToken ];
+        $header= ['Authorization2'=> 'Bearer '.$accessToken ];
         
         $paramArray = [
             ];
@@ -275,6 +278,7 @@ class OAuth2PKCEClientExtension extends Extension {
         
         if( $this->ownTenantUri != null ){
             $header= ['Authorization'=> 'Bearer '.$accessToken ];
+            $header= ['Authorization2'=> 'Bearer '.$accessToken ];
 
             $paramArray = [
                 ];
@@ -305,6 +309,7 @@ class OAuth2PKCEClientExtension extends Extension {
         }
 
         $header= ['Authorization'=> 'Bearer '.$session->getAccessToken() ];
+        $header= ['Authorization2'=> 'Bearer '.$session->getAccessToken() ];
 
         $response= $this->get($url, $header, $this->encodeParams($params));
         
