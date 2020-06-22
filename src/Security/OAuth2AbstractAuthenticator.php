@@ -152,7 +152,7 @@ abstract class OAuth2AbstractAuthenticator extends AbstractGuardAuthenticator {
             // The token header was empty, authentication fails with HTTP Status
             // Code 401 "Unauthorized"
             throw new CustomUserMessageAuthenticationException(
-                'Missing token'
+                '401-001 Missing token'
             );
         }
 
@@ -162,7 +162,7 @@ abstract class OAuth2AbstractAuthenticator extends AbstractGuardAuthenticator {
             // The token header was empty, authentication fails with HTTP Status
             // Code 401 "Unauthorized"
             throw new CustomUserMessageAuthenticationException(
-                'Token expired'
+                '401-002 Token expired'
             );
         }
         
