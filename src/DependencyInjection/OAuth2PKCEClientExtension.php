@@ -189,6 +189,23 @@ class OAuth2PKCEClientExtension extends Extension {
         return $this->getAuthRedirect($session, $extraConfig);
     }
     
+    public function renewToken(string $username, array $parameters){
+        $session = new OAuth2Session();
+        $authUrl = $this->getAuthRedirectRenew($session, $username, $parameters);
+        
+        $resp =  $this->get($authUrl->getTargetUrl(), $parameters );
+        
+    }
+    
+    /**
+     * Fetches a token
+     * 
+     * @param string $state
+     * @param string $verifier
+     * @param string $code
+     * @return type
+     * @throws EmptyResponseException
+     */
     public function getToken(string $state, string $verifier, string $code){
         
         $header= ['Authorization'=> 'Basic '.base64_encode($this->clientId.":".$this->clientSecret)];
@@ -327,6 +344,7 @@ class OAuth2PKCEClientExtension extends Extension {
             CURLOPT_MAXREDIRS       => 10,
             CURLOPT_TIMEOUT         => 30,
             CURLOPT_HTTP_VERSION    => CURL_HTTP_VERSION_1_1,
+            CURLOPT_FOLLOWLOCATION  => true,
             //CURLOPT_CUSTOMREQUEST   => "GET",
             CURLOPT_HTTPHEADER      => $this->packKeys($headers),
                 ];
