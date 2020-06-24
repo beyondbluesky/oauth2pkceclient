@@ -200,10 +200,11 @@ class OAuth2PKCEClientExtension extends Extension {
 
         $resp =  $this->get($authUrl->getTargetUrl(), [] );
         
+        /* If everything is alright, perfect.
         if( $resp != ''){
             // Something went wrong!
             throw new \Exception($resp);
-        }
+        }*/
     }
     
     /**
