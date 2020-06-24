@@ -122,7 +122,7 @@ class OAuth2PKCEClientExtension extends Extension {
      * @param array $extraParameters
      * @return RedirectResponse
      */
-    public function getAuthRedirect(OAuth2Session $session, array $extraParameters= [] ) {
+    public function getAuthRedirect(OAuth2Session $session, array $extraParameters= [] ): RedirectResponse {
 
         $verifier = $this->generateCodeVerifier();
         $challenge = $this->getCodeChallenge($verifier);
@@ -170,7 +170,7 @@ class OAuth2PKCEClientExtension extends Extension {
      * @return type
      * @throws Exception
      */
-    public function getAuthRedirectRenew(OAuth2Session $session, string $userId, array $extraParameters= [] ) {
+    public function getAuthRedirectRenew(OAuth2Session $session, string $userId, array $extraParameters= [] ): RedirectResponse {
 
         $oldSession = $this->sessionRepo->findOneBy(['userId'=>$userId]);
         
@@ -193,10 +193,10 @@ class OAuth2PKCEClientExtension extends Extension {
      * Renews a token using the id_token_hint flow. This function has to be used internally, since makes all the
      * workflow without user intervention.
      * 
-     * @param string $username
+     * @param RedirectResponse $username
      * @param array $parameters
      */
-    public function fetchAuthRedirectRenew(string $authUrl ){
+    public function fetchAuthRedirectRenew(RedirectResponse $authUrl ){
 
         $resp =  $this->get($authUrl->getTargetUrl() );
         
