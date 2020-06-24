@@ -189,12 +189,23 @@ class OAuth2PKCEClientExtension extends Extension {
         return $this->getAuthRedirect($session, $extraConfig);
     }
     
+    /**
+     * Renews a token using the id_token_hint flow. This function has to be used internally, since makes all the
+     * workflow without user intervention.
+     * 
+     * @param string $username
+     * @param array $parameters
+     */
     public function renewToken(string $username, array $parameters){
         $session = new OAuth2Session();
         $authUrl = $this->getAuthRedirectRenew($session, $username, $parameters);
         
         $resp =  $this->get($authUrl->getTargetUrl(), $parameters );
         
+        if( $resp != ''){
+            // Something went wrong!
+            throw new \Exception($resp);
+        }
     }
     
     /**

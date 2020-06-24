@@ -98,7 +98,7 @@ abstract class OAuth2PKCEAuthenticator extends OAuth2AbstractAuthenticator
         
         $session = $this->sessionRepo->findOneBy(['state'=>$state],['id'=>'DESC']);
         if( $session == null ){
-            throw new AccessDeniedException('State received not found!');
+            throw new AccessDeniedException('State received not found! '.$state);
         }
         
         $res= $this->fetchAccessToken($session, $code);
