@@ -198,7 +198,7 @@ class OAuth2PKCEClientExtension extends Extension {
      */
     public function fetchAuthRedirectRenew(RedirectResponse $authUrl ){
 
-        $resp =  $this->get($authUrl->getTargetUrl() );
+        $resp =  $this->get($authUrl->getTargetUrl(), [] );
         
         if( $resp != ''){
             // Something went wrong!
