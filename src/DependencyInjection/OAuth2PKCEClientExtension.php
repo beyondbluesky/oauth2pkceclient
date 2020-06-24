@@ -196,11 +196,9 @@ class OAuth2PKCEClientExtension extends Extension {
      * @param string $username
      * @param array $parameters
      */
-    public function renewToken(string $username, array $parameters){
-        $session = new OAuth2Session();
-        $authUrl = $this->getAuthRedirectRenew($session, $username, $parameters);
-        
-        $resp =  $this->get($authUrl->getTargetUrl(), $parameters );
+    public function fetchAuthRedirectRenew(string $authUrl ){
+
+        $resp =  $this->get($authUrl->getTargetUrl() );
         
         if( $resp != ''){
             // Something went wrong!
