@@ -62,8 +62,13 @@ abstract class OAuth2AbstractAuthenticator extends AbstractGuardAuthenticator {
      */
     public function getCredentials(Request $request)
     {
+        $auth = $request->headers->get('AUTHORIZATION');
+        if( $auth == null ){
+            $auth = $request->headers->get('AUTHORIZATION2');           
+        }
+        
         $out= [
-            'authorization'=>$request->headers->get('AUTHORIZATION'),
+            'authorization'=> $auth,
             'uri'=> $request->getRequestUri(),
             'host'=> $this->getMyHost($request),
             'method'=> $request->getMethod(),
