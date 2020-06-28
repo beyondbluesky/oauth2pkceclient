@@ -34,7 +34,7 @@ abstract class OAuth2ApiAuthenticator extends OAuth2AbstractAuthenticator
     {
         $result = $request->headers->has('AUTHORIZATION');
         if( $result == false ) {
-            $result = $request->headers->has('AUTHORIZATION2');
+            $result = $request->headers->has('HTTP_AUTHORIZATION2');
         }
         
         $resStr = ($result)?'true':'false';

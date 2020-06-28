@@ -196,15 +196,37 @@ class OAuth2PKCEClientExtension extends Extension {
      * @param RedirectResponse $username
      * @param array $parameters
      */
-    public function fetchAuthRedirectRenew(RedirectResponse $authUrl ){
-
-        $resp =  $this->get($authUrl->getTargetUrl(), [] );
+    public function fetchAuthRedirectRenew(string $username, string $audience){
         
-        /* If everything is alright, perfect.
-        if( $resp != ''){
-            // Something went wrong!
-            throw new \Exception($resp);
-        }*/
+        $session = new OAuth2Session();
+        $authUrl = $oauthService->getAuthRedirectRenew($session, $username, ['audience'=>$audience] );
+        
+        $token= $oauthService->fetchAuthRedirectRenew( $authUrl, $session );
+        $session->setAccessToken($token->access_token);
+        $session->setRefreshToken($token->refresh_token);
+        $this->getDoctrine()->getManager()->persist($session);
+        $this->getDoctrine()->getManager()->flush();
+        
+    }
+    
+    private function fetchAuthRedirectRenew0(RedirectResponse $authUrl, $session ){
+        $resp= '';
+        
+        $url= $authUrl->getTargetUrl();
+        $header= $this->cURLHeader($url);
+        
+        $redirUrl= '';
+        if( isset($header['redirect_url'])){
+            $redirUrl = $header['redirect_url'];
+            $params = explode('?', $redirUrl);
+            $codeStr = explode('&',explode('=', $redirUrl)[1]);
+            $code = $codeStr[0];
+            
+            //var_dump($code);die;
+            $resp = $this->getToken($session->getState(), $session->getCodeVerifier(), $code );
+
+        }
+        return json_decode($resp);
     }
     
     /**
@@ -218,7 +240,7 @@ class OAuth2PKCEClientExtension extends Extension {
      */
     public function getToken(string $state, string $verifier, string $code){
         
-        $header= ['Authorization'=> 'Basic '.base64_encode($this->clientId.":".$this->clientSecret)];
+        $header= ['Authorization'=> 'Basic '. base64_encode($this->clientId.":".$this->clientSecret)];
         $header= ['Authorization2'=> 'Basic '.base64_encode($this->clientId.":".$this->clientSecret)];
         
         $paramArray = [
@@ -354,12 +376,13 @@ class OAuth2PKCEClientExtension extends Extension {
             CURLOPT_MAXREDIRS       => 10,
             CURLOPT_TIMEOUT         => 30,
             CURLOPT_HTTP_VERSION    => CURL_HTTP_VERSION_1_1,
-            CURLOPT_FOLLOWLOCATION  => true,
+            //CURLOPT_FOLLOWLOCATION  => true,
             //CURLOPT_CUSTOMREQUEST   => "GET",
+                   // CURLOPT_HEADER => TRUE,
             CURLOPT_HTTPHEADER      => $this->packKeys($headers),
                 ];
 
-        return $this->cURL($url, $curlOpts, $tlsCert, $keyTlsCert);
+        return $this->cURL($curlOpts, $tlsCert, $keyTlsCert);
     }
         
     private function post(string $url, array $headers, string $body, string $tlsCert= null, string $keyTlsCert= null){
@@ -377,7 +400,7 @@ class OAuth2PKCEClientExtension extends Extension {
             CURLOPT_POSTFIELDS      => $body,
                 ];
 
-        return $this->cURL($url, $curlOpts, $tlsCert, $keyTlsCert);
+        return $this->cURL($curlOpts, $tlsCert, $keyTlsCert);
     }
     
     /**
@@ -494,8 +517,34 @@ class OAuth2PKCEClientExtension extends Extension {
         return $randomString; 
     }
     
+    private function cURLHeader(string $url){
 
-    private function cURL(string $url, array $curlOpts, string $tlsCert= null, string $keyTlsCert= null){
+        $curlOpts=  
+                [
+            CURLOPT_URL             => $url, 
+                    CURLOPT_HEADER  => true,
+            CURLOPT_HTTPGET         => true,
+            CURLOPT_RETURNTRANSFER  => true,
+            CURLOPT_MAXREDIRS       => 10,
+            CURLOPT_TIMEOUT         => 30,
+            CURLOPT_HTTP_VERSION    => CURL_HTTP_VERSION_1_1,
+            //CURLOPT_FOLLOWLOCATION  => true,
+            //CURLOPT_CUSTOMREQUEST   => "GET",
+                   // CURLOPT_HEADER => TRUE,
+            CURLOPT_SSL_VERIFYHOST => 0,
+            CURLOPT_SSL_VERIFYPEER => 0 ,                    
+            CURLOPT_HTTPHEADER      => $this->packKeys([]),
+                ];
+
+        $curl = curl_init();
+        curl_setopt_array($curl, $curlOpts);
+        curl_exec($curl); //hit the $url
+        $curl_info = curl_getinfo($curl);
+        
+        return $curl_info;        
+    }
+
+    private function cURL(array $curlOpts, string $tlsCert= null, string $keyTlsCert= null){
      
         $curl = curl_init();
         curl_setopt_array($curl, $curlOpts);
@@ -526,7 +575,7 @@ class OAuth2PKCEClientExtension extends Extension {
             unlink($tlsKeyFile);
         }
         if ($err) {
-          return "cURL Error #:" . $err;
+          throw new \Exception("cURL Error #:" . $err);
         } else {
           return $response;
         }

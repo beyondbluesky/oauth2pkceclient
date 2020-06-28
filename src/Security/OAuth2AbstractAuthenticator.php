@@ -64,7 +64,7 @@ abstract class OAuth2AbstractAuthenticator extends AbstractGuardAuthenticator {
     {
         $auth = $request->headers->get('AUTHORIZATION');
         if( $auth == null ){
-            $auth = $request->headers->get('AUTHORIZATION2');           
+            $auth = $request->headers->get('HTTP_AUTHORIZATION2');           
         }
         
         $out= [
