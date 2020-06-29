@@ -204,6 +204,7 @@ class OAuth2PKCEClientExtension extends Extension {
         $token= $this->fetchAuthRedirectRenew0( $authUrl, $session );
         
         if( isset($token->access_token) ){
+            $session->setUserId($username);
             $session->setAccessToken($token->access_token);
             $session->setRefreshToken($token->refresh_token);
             $this->sessionRepo->persist($session);
