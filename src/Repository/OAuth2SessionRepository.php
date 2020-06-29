@@ -45,6 +45,11 @@ class OAuth2SessionRepository extends ServiceEntityRepository
         return $this->findOneBy(['userId'=> $userId,'audience'=>$audience],['id'=>'DESC']);
     }
     
+    public function persist(OAuth2Session $session){
+        $this->_em->persist($session);
+        $this->_em->flush();
+    }
+    
     // /**
     //  * @return OAuth2Session[] Returns an array of OAuth2Session objects
     //  */

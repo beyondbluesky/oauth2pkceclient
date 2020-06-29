@@ -199,18 +199,21 @@ class OAuth2PKCEClientExtension extends Extension {
     public function fetchAuthRedirectRenew(string $username, string $audience){
         
         $session = new OAuth2Session();
-        $authUrl = $oauthService->getAuthRedirectRenew($session, $username, ['audience'=>$audience] );
+        $authUrl = $this->getAuthRedirectRenew($session, $username, ['audience'=>$audience] );
         
-        $token= $oauthService->fetchAuthRedirectRenew( $authUrl, $session );
-        $session->setAccessToken($token->access_token);
-        $session->setRefreshToken($token->refresh_token);
-        $this->getDoctrine()->getManager()->persist($session);
-        $this->getDoctrine()->getManager()->flush();
+        $token= $this->fetchAuthRedirectRenew0( $authUrl, $session );
         
+        if( isset($token->access_token) ){
+            $session->setAccessToken($token->access_token);
+            $session->setRefreshToken($token->refresh_token);
+            $this->sessionRepo->persist($session);
+        }else {
+            throw new TokenNotFoundException("id_token_hint answer without token!");
+        }     
     }
     
     private function fetchAuthRedirectRenew0(RedirectResponse $authUrl, $session ){
-        $resp= '';
+        $resp= new \stdClass();
         
         $url= $authUrl->getTargetUrl();
         $header= $this->cURLHeader($url);
@@ -219,14 +222,41 @@ class OAuth2PKCEClientExtension extends Extension {
         if( isset($header['redirect_url'])){
             $redirUrl = $header['redirect_url'];
             $params = explode('?', $redirUrl);
-            $codeStr = explode('&',explode('=', $redirUrl)[1]);
-            $code = $codeStr[0];
-            
-            //var_dump($code);die;
-            $resp = $this->getToken($session->getState(), $session->getCodeVerifier(), $code );
-
+            $params = $this->parseParams($params);
+            if( isset($params['code']) ){
+                //var_dump($code);die;
+                $resp = $this->getToken($session->getState(), $session->getCodeVerifier(), $params['code'] );
+            }else {
+                throw new TokenNotFoundException('No code received '. json_encode($params));
+            }
+        }else {
+            throw new TokenNotfoundException('No redirect Uri received.');
         }
-        return json_decode($resp);
+        return $resp;
+    }
+    
+    private function parseParams(array $src): array {
+        // We receive an array with first item the url and second the params
+        if( sizeof($src) > 1 ){
+            // We parse the parameters (delimiter &)
+            return $this->parseParams0( explode('&', $src[1]) ); 
+        }
+        
+        return [];
+    }
+    
+    private function parseParams0(array $src): array {
+        $out= [];
+        foreach($src as $v){
+            $vArray = explode('=', $v);
+            if(sizeof($vArray) > 1){
+                $out[$vArray[0]]= $vArray[1];
+            }else{
+                $out[$vArray[0]]= '';
+            }
+        }
+        
+        return $out;
     }
     
     /**
