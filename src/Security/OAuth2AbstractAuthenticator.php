@@ -67,11 +67,31 @@ abstract class OAuth2AbstractAuthenticator extends AbstractGuardAuthenticator {
             $auth = $request->headers->get('AUTHORIZATION2');           
         }
         
+        $method = $request->getMethod();
+        if( $method == 'GET') {
+            $headers = $request->server->all();
+            $queryStr= $headers['QUERY_STRING'];
+            $queryArray = explode('&', $queryStr);
+            foreach($queryArray as $q){
+                $keypair = explode('=', $q);
+                if( sizeof($keypair) > 1 && $keypair[0] == '_method'){
+                    $method = $keypair[1];
+                }
+            }
+        }else if( $method == 'POST'){
+            // It could be an advance method. We look for it
+            $body = $request->getContent();
+            $content = json_decode($body);
+            if( isset($content->_method)){
+                $method = $content->_method;
+            }
+        }
+        
         $out= [
             'authorization'=> $auth,
             'uri'=> $request->getRequestUri(),
             'host'=> $this->getMyHost($request),
-            'method'=> $request->getMethod(),
+            'method'=> $method,
             ];
         
         //$this->log->info("ApiAuthenticator::getCredentials() ".json_encode($out));

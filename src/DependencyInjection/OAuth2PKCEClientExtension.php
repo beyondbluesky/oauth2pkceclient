@@ -391,8 +391,31 @@ class OAuth2PKCEClientExtension extends Extension {
         $header= ['Authorization'=> 'Bearer '.$session->getAccessToken() ];
         $header= ['Authorization2'=> 'Bearer '.$session->getAccessToken() ];
 
-        $response= $this->get($url, $header, $this->encodeParams($params));
-        
+        if( strtoupper($method) == 'GET'){
+            
+            $response= $this->get($url, $header, $this->encodeParams($params));
+            
+        }else if( strtoupper($method) == 'LIST'){
+            
+            $response= $this->get($url."?_method=LIST", $header, $this->encodeParams($params));
+            
+        }else if( strtoupper($method) == 'DELETE'){
+            
+            $response= $this->get($url."?_method=DELETE", $header, $this->encodeParams($params));
+            
+        }else if( strtoupper($method) == 'POST'){
+
+            $response= $this->post($url, $header, $this->encodeParams($params));
+            
+        }else if( strtoupper($method) == 'PUT'){
+            
+            $params = array_merge( $params, ['_method'=>'PUT']);
+            $response= $this->post($url, $header, $this->encodeParams($params));
+            
+        }else {
+            
+            throw new \Exception('Wrong method requested. Allowed: GET, PUT, LIST, DELETE, POST');
+        }
         return $response;                
         
     }
