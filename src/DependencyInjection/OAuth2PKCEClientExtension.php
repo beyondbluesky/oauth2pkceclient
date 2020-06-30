@@ -393,15 +393,15 @@ class OAuth2PKCEClientExtension extends Extension {
 
         if( strtoupper($method) == 'GET'){
             
-            $response= $this->get($url, $header, $this->encodeParams($params));
+            $response= $this->get($url."?".$this->encodeParams($params), $header);
             
         }else if( strtoupper($method) == 'LIST'){
             
-            $response= $this->get($url."?_method=LIST", $header, $this->encodeParams($params));
+            $response= $this->get($url."?_method=LIST&".$this->encodeParams($params), $header);
             
         }else if( strtoupper($method) == 'DELETE'){
             
-            $response= $this->get($url."?_method=DELETE", $header, $this->encodeParams($params));
+            $response= $this->get($url."?_method=DELETE&".$this->encodeParams($params), $header);
             
         }else if( strtoupper($method) == 'POST'){
 
