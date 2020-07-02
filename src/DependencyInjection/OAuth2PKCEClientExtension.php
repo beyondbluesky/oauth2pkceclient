@@ -380,7 +380,7 @@ class OAuth2PKCEClientExtension extends Extension {
      * @param array $params
      * @return type
      */
-    public function getSecureUrl(string $audience, string $userId, string $url, array $params=[]){
+    public function getSecureUrl(string $audience, string $userId, string $url, string $method, bool $jsonEncoding= false, array $params=[]){
         $response = null;
         
         $session = $this->sessionRepo->findByAudience($userId, $audience);
@@ -388,16 +388,28 @@ class OAuth2PKCEClientExtension extends Extension {
             throw new TokenNotFoundException('Token not found!');
         }
 
-        $header= ['Authorization'=> 'Bearer '.$session->getAccessToken() ];
-        $header= ['Authorization2'=> 'Bearer '.$session->getAccessToken() ];
+        $header= ['Authorization'=> 'Bearer '.$session->getAccessToken(),
+                  'Authorization2'=> 'Bearer '.$session->getAccessToken() ];
 
+        if( $jsonEncoding ){
+            $header= array_merge( $header, [
+                "Accept"=>"application/json",                
+            ]);
+        }
+        
+        
         if( strtoupper($method) == 'GET'){
             
             $response= $this->get($url."?".$this->encodeParams($params), $header);
             
         }else if( strtoupper($method) == 'LIST'){
             
-            $response= $this->get($url."?_method=LIST&".$this->encodeParams($params), $header);
+            //$response= $this->get($url."?_method=LIST&".$this->encodeParams($params), $header);
+            $params = array_merge( $params, ['_method'=>'LIST']);
+            $header = array_merge( $header, [
+                "X-HTTP-Method-Override"=>"LIST"
+                ]);
+            $response= $this->post($url, $header, $this->encodeParams($params));
             
         }else if( strtoupper($method) == 'DELETE'){
             
@@ -410,6 +422,9 @@ class OAuth2PKCEClientExtension extends Extension {
         }else if( strtoupper($method) == 'PUT'){
             
             $params = array_merge( $params, ['_method'=>'PUT']);
+            $header = array_merge( $header, [
+                "X-HTTP-Method-Override"=>"PUT"
+                ]);
             $response= $this->post($url, $header, $this->encodeParams($params));
             
         }else {
@@ -419,6 +434,7 @@ class OAuth2PKCEClientExtension extends Extension {
         return $response;                
         
     }
+    
     
     private function get(string $url, array $headers, string $tlsCert= null, string $keyTlsCert= null){
         
