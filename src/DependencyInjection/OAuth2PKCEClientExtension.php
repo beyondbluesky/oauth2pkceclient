@@ -48,6 +48,10 @@ class OAuth2PKCEClientExtension extends Extension {
     private $ownerServerUri;
     private $ownTenantUri;
     
+    private $serverCert;
+    private $clientCert;
+    private $clientCertKey;
+    
     private $redirectUri;
     private $scope;
     
@@ -90,6 +94,10 @@ class OAuth2PKCEClientExtension extends Extension {
         $this->clientSecret   = $config['client']['secret'];
         $this->redirectUri    = $config['client']['redirect_uri'];
         $this->scope          = $config['client']['scope'];
+
+        $this->serverCert = $config['client']['server_cert'];
+        $this->clientCert = $config['client']['cert'];
+        $this->clientCertKey = $config['client']['cert_key'];
         
         $this->authServerUri  = $config['server_uris']['auth_uri'];
         $this->tokenServerUri = $config['server_uris']['token_uri'];
@@ -101,12 +109,7 @@ class OAuth2PKCEClientExtension extends Extension {
             $this->ownTenantUri = null;
         }
     }
-    /*
-    public function getContainerExtension()
-    {
-        return new OAuth2PKCEClientExtension();
-    }
-    */
+    
     public function getAlias(){
         return "oauth2_pkce_client";
     }
@@ -435,6 +438,10 @@ class OAuth2PKCEClientExtension extends Extension {
         
     }
     
+    public function getServerCert(){
+        return $this->serverCert;
+    }
+    
     
     private function get(string $url, array $headers, string $tlsCert= null, string $keyTlsCert= null){
         
@@ -674,6 +681,5 @@ class OAuth2PKCEClientExtension extends Extension {
         
         return $out;
     }
-    
     
 }

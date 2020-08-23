@@ -21,6 +21,8 @@ use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 
 use BeyondBlueSky\OAuth2PKCEClient\Entity\OAuth2Session;
 
+use BeyondBlueSky\OAuth2PKCEClient\Entity\Exception\FailedSignatureException;
+
 use BeyondBlueSky\LibJWT\Entity\JWToken;
 use BeyondBlueSky\LibJWT\DependencyInjection\JWTServiceExtension as JWTService;
 
@@ -173,7 +175,7 @@ abstract class OAuth2AbstractAuthenticator extends AbstractGuardAuthenticator {
         
         $token= $this->getAccessToken($credentials);
         
-        if (null === $token) {
+        if ( $token === null ) {
             // The token header was empty, authentication fails with HTTP Status
             // Code 401 "Unauthorized"
             throw new CustomUserMessageAuthenticationException(
@@ -181,6 +183,10 @@ abstract class OAuth2AbstractAuthenticator extends AbstractGuardAuthenticator {
             );
         }
 
+        // We check if the token is signed and if the token match the signature of our OAuth server
+        if( $this->jwt->signedToken($token) && ! $this->jwt->tokenVerified($token, $this->oauth->serverCert )) {
+            throw new FailedSignatureException('Token has wrong signature.');
+        }
         $jwToken = $this->jwt->decode($token);
         
         if( $jwToken->isExpired() ){
@@ -209,6 +215,22 @@ abstract class OAuth2AbstractAuthenticator extends AbstractGuardAuthenticator {
 
     private function getMyHost(Request $request): string {
         return $request->getScheme() . '://' . $request->getHttpHost();
+    }
+    
+    public function checkJWT(string $token ): bool {
+        
+        if( ! $this->jwt->signedToken($token) ){
+            
+            throw new FailedSignatureException('Token has no signature.');
+        }   
+        
+        if( ! $this->jwt->tokenVerified($token, $this->oauth->getServerCert() ) ) {
+            
+            throw new FailedSignatureException('Token has wrong signature.');
+        }
+        
+        
+        return true;
     }
         
 }
