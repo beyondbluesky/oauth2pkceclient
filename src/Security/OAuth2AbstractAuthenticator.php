@@ -184,7 +184,7 @@ abstract class OAuth2AbstractAuthenticator extends AbstractGuardAuthenticator {
         }
 
         // We check if the token is signed and if the token match the signature of our OAuth server
-        if( $this->jwt->signedToken($token) && ! $this->jwt->tokenVerified($token, $this->oauth->serverCert )) {
+        if( $this->jwt->signedToken($token) && ! $this->jwt->tokenVerified($token, $this->oauth->getServerCert() )) {
             throw new FailedSignatureException('Token has wrong signature.');
         }
         $jwToken = $this->jwt->decode($token);

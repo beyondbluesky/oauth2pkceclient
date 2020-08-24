@@ -51,12 +51,12 @@ class OAuth2Session {
     private $codeVerifier;
        
     /**
-     * @ORM\Column(type="string", length=4096, nullable=true)
+     * @ORM\Column(type="text", length=40960, nullable=true)
      */
     private $accessToken;
 
     /**
-     * @ORM\Column(type="string", length=4096, nullable=true)
+     * @ORM\Column(type="text", length=40960, nullable=true)
      */
     private $refreshToken;
 
