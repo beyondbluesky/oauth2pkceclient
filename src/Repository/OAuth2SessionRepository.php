@@ -20,7 +20,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\Common\Persistence\ManagerRegistry;
+//use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Bundle\DoctrineBundle\Registry;
 
 /**
  * @method OAuth2Session|null find($id, $lockMode = null, $lockVersion = null)
@@ -33,7 +34,7 @@ class OAuth2SessionRepository extends ServiceEntityRepository
     protected $_em;
     protected $_container;
     
-    public function __construct(EntityManagerInterface $manager, ContainerInterface $container, ManagerRegistry $registry) {
+    public function __construct(EntityManagerInterface $manager, ContainerInterface $container, Registry $registry) {
         $this->_em = $manager;
         $this->_container = $container;
         
