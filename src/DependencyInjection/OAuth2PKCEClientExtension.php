@@ -414,11 +414,11 @@ class OAuth2PKCEClientExtension extends Extension {
                 ]);
             $response= $this->post($url, $header, $this->encodeParams($params));
             
-        }else if( strtoupper($method) == 'CONSENT'){
+        }else if( strtoupper($method) == 'STATUS'){
             
-            $params = array_merge( $params, ['_method'=>'CONSENT']);
+            $params = array_merge( $params, ['_method'=>'STATUS']);
             $header = array_merge( $header, [
-                "X-HTTP-Method-Override"=>"CONSENT"
+                "X-HTTP-Method-Override"=>"STATUS"
                 ]);
             $response= $this->post($url, $header, $this->encodeParams($params));
             
@@ -440,7 +440,7 @@ class OAuth2PKCEClientExtension extends Extension {
             
         }else {
             
-            throw new \Exception('Wrong method requested. Allowed: GET, PUT, LIST, CONSENT, DELETE, POST');
+            throw new \Exception('Wrong method requested. Allowed: GET, PUT, LIST, STATUS, DELETE, POST');
         }
         return $response;                
         
