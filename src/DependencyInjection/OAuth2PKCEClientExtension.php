@@ -372,6 +372,20 @@ class OAuth2PKCEClientExtension extends Extension {
         return json_decode($response);
         
     }
+    /**
+     * Using tokens already obtained from an oauth server, it fetches a URL using
+     * a token
+     * 
+     * @param string $audience
+     * @param string $userId
+     * @param string $url
+     * @param array $params
+     * @return type
+     */
+    public function getSecureJsonUrl(string $audience, string $userId, string $url, string $method, string $content){
+    
+        return $this->getSecureUrl0($audience, $userId, $url, $method, $content, true);
+    }
     
     /**
      * Using tokens already obtained from an oauth server, it fetches a URL using
@@ -384,6 +398,12 @@ class OAuth2PKCEClientExtension extends Extension {
      * @return type
      */
     public function getSecureUrl(string $audience, string $userId, string $url, string $method, bool $jsonEncoding= false, array $params=[]){
+        
+        return $this->getSecureUrl0($audience, $userId, $url, $method, $this->encodeParams($params), false);
+        
+    }
+    
+    private function getSecureUrl0(string $audience, string $userId, string $url, string $method, string $data, bool $jsonEncoding= false){
         $response = null;
         
         $session = $this->sessionRepo->findByAudience($userId, $audience);
@@ -400,10 +420,9 @@ class OAuth2PKCEClientExtension extends Extension {
             ]);
         }
         
-        
         if( strtoupper($method) == 'GET'){
             
-            $response= $this->get($url."?".$this->encodeParams($params), $header);
+            $response= $this->get($url."?".$data, $header);
             
         }else if( strtoupper($method) == 'LIST'){
             
@@ -412,7 +431,7 @@ class OAuth2PKCEClientExtension extends Extension {
             $header = array_merge( $header, [
                 "X-HTTP-Method-Override"=>"LIST"
                 ]);
-            $response= $this->post($url, $header, $this->encodeParams($params));
+            $response= $this->post($url, $header, $data);
             
         }else if( strtoupper($method) == 'STATUS'){
             
@@ -420,15 +439,15 @@ class OAuth2PKCEClientExtension extends Extension {
             $header = array_merge( $header, [
                 "X-HTTP-Method-Override"=>"STATUS"
                 ]);
-            $response= $this->post($url, $header, $this->encodeParams($params));
+            $response= $this->post($url, $header, $data );
             
         }else if( strtoupper($method) == 'DELETE'){
             
-            $response= $this->get($url."?_method=DELETE&".$this->encodeParams($params), $header);
+            $response= $this->get($url."?_method=DELETE&".$data, $header);
             
         }else if( strtoupper($method) == 'POST'){
 
-            $response= $this->post($url, $header, $this->encodeParams($params));
+            $response= $this->post($url, $header, $data );
             
         }else if( strtoupper($method) == 'PUT'){
             
@@ -436,7 +455,7 @@ class OAuth2PKCEClientExtension extends Extension {
             $header = array_merge( $header, [
                 "X-HTTP-Method-Override"=>"PUT"
                 ]);
-            $response= $this->post($url, $header, $this->encodeParams($params));
+            $response= $this->post($url, $header, $data );
             
         }else {
             
