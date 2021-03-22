@@ -19,7 +19,7 @@
         "symfony/dependency-injection": "^5.1|^5.2",
         "symfony/routing": "^5.1|^5.2",
         "symfony/http-foundation": "^5.1|^5.2",
-        "beyondbluesky/lib-jwt": "1.2"
+        "beyondbluesky/lib-jwt": "1.*"
     },
     "require-dev": {
         "php": ">=7.3",
