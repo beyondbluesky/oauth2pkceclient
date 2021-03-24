@@ -356,7 +356,7 @@ class OAuth2PKCEClientExtension extends Extension {
         
     }
     
-    public function getOwnTenant(string $accessToken):?\stdClass{
+    public function getOwnTenant(string $accessToken): array{
         $response = '{}';
         
         if( $this->ownTenantUri != null ){
@@ -368,6 +368,7 @@ class OAuth2PKCEClientExtension extends Extension {
 
             $response= $this->get($this->ownTenantUri, $header, $this->encodeParams($paramArray));
         }
+        $response = ( is_object($response) )?[$response]:$response;
         
         return json_decode($response);
         
