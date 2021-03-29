@@ -428,7 +428,7 @@ class OAuth2PKCEClientExtension extends Extension {
         }else if( strtoupper($method) == 'LIST'){
             
             //$response= $this->get($url."?_method=LIST&".$this->encodeParams($params), $header);
-            $params = array_merge( $params, ['_method'=>'LIST']);
+            $data = array_merge( $data, ['_method'=>'LIST']);
             $header = array_merge( $header, [
                 "X-HTTP-Method-Override"=>"LIST"
                 ]);
@@ -436,7 +436,7 @@ class OAuth2PKCEClientExtension extends Extension {
             
         }else if( strtoupper($method) == 'STATUS'){
             
-            $params = array_merge( $params, ['_method'=>'STATUS']);
+            $data = array_merge( $data, ['_method'=>'STATUS']);
             $header = array_merge( $header, [
                 "X-HTTP-Method-Override"=>"STATUS"
                 ]);
@@ -452,7 +452,7 @@ class OAuth2PKCEClientExtension extends Extension {
             
         }else if( strtoupper($method) == 'PUT'){
             
-            $params = array_merge( $params, ['_method'=>'PUT']);
+            $data = array_merge( $data, ['_method'=>'PUT']);
             $header = array_merge( $header, [
                 "X-HTTP-Method-Override"=>"PUT"
                 ]);
