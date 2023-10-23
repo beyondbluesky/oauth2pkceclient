@@ -1,7 +1,7 @@
 OAuth2 PKCE Enabled client
 ===========================
 
-This Symfony bundle allows a Symfony4/5 installation authenticate it's users against an OAuth2 compliant server using the PKCE extension.
+This Symfony bundle allows a Symfony4/5/6 installation authenticate it's users against an OAuth2 compliant server using the PKCE extension.
 
 The PKCE extension RFC-7636 (https://tools.ietf.org/html/rfc7636) adds additional security to the OAuth2 protocol and it will be mandatory on future versions of OAuth2.
 
