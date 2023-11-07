@@ -1,0 +1,1 @@
+1.3.7 - 7/11/2023 - Update of Symfony version to 6.3
