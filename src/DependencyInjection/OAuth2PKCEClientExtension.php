@@ -452,7 +452,16 @@ class OAuth2PKCEClientExtension extends Extension {
             
         }else if( strtoupper($method) == 'DELETE'){
             
-            $response= $this->get($url."?_method=DELETE&".$data, $header);
+            //$response= $this->get($url."?_method=DELETE&".$data, $header);
+            if( $jsonEncoding ){
+                $url .= '?_method=DELETE';                
+            }else {
+                $data .= '&_method=DELETE';
+            }
+            $header = array_merge( $header, [
+                "X-HTTP-Method-Override"=>"DELETE"
+                ]);
+            $response= $this->post($url, $header, $data );
             
         }else if( strtoupper($method) == 'POST'){
 
