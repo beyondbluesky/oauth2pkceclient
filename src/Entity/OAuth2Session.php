@@ -14,60 +14,36 @@
 namespace BeyondBlueSky\OAuth2PKCEClient\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use BeyondBlueSky\OAuth2PKCEClient\Repository\OAuth2SessionRepository;
 
-/**
- * @ORM\Entity(repositoryClass="BeyondBlueSky\Repository\OAuth2SessionRepository")
- * @ORM\Table(name="security_oauth2_session") 
- * 
- */
+#[ORM\Entity(repositoryClass: OAuth2SessionRepository::class)]
+#[ORM\Table(name: 'security_oauth2_session')]
 class OAuth2Session {
     
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(type: 'integer')]
     private $id;
 
-    /**
-     *
-     * @ORM\Column(type="string", length=180, nullable=true)
-     * @var string
-     */
+    #[ORM\Column(type: 'string', length: 180, nullable: true)]
     private $state;
     
-    /**
-     *
-     * @ORM\Column(type="string", length=256, nullable=true)
-     * @var string
-     */
+    #[ORM\Column(type: 'string', length: 256, nullable: true)]
     private $codeChallenge;
     
-    /**
-     *
-     * @ORM\Column(type="string", length=256, nullable=true)
-     * @var string
-     */
+    #[ORM\Column(type: 'string', length: 256, nullable: true)]
     private $codeVerifier;
        
-    /**
-     * @ORM\Column(type="text", length=40960, nullable=true)
-     */
+    #[ORM\Column(type: 'text', length: 40960, nullable: true)]
     private $accessToken;
 
-    /**
-     * @ORM\Column(type="text", length=40960, nullable=true)
-     */
+    #[ORM\Column(type: 'text', length: 40960, nullable: true)]
     private $refreshToken;
 
-    /**
-     * @ORM\Column(type="string", length=256, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 256, nullable: true)]
     private $userId;
 
-    /**
-     * @ORM\Column(type="string", length=256, nullable=true)
-     */
+    #[ORM\Column(type: 'string', length: 256, nullable: true)]
     private $audience;
 
     public function setState($state){

@@ -1,224 +1,198 @@
-OAuth2 PKCE Enabled client
-===========================
+OAuth2 PKCE Enabled Client
+==========================
 
-This Symfony bundle allows a Symfony4/5/6 installation authenticate it's users against an OAuth2 compliant server using the PKCE extension.
+This Symfony bundle allows a Symfony 8 application to authenticate users against an OAuth2-compliant server using PKCE (RFC 7636).
 
-The PKCE extension RFC-7636 (https://tools.ietf.org/html/rfc7636) adds additional security to the OAuth2 protocol and it will be mandatory on future versions of OAuth2.
-
-This implementation requires the generation of: 
-- An Authenticator
-- A Controller to receive the response from the OAuth2 Server
-- A table to store the session information (oauth2_session). The table is used to store the session information, including the challenge and verifier strings, used to secure the communication as part
-of the PKCE extension. 
-- The required config file where we'll store the client_id, oauth2 uris, etc.
-- The modification of security.yml to include all the previous configuration
-
-Following you'll find all the steps to configure it. Don't worry...
-
-
-Installation
+Compatibility
 -------------
 
-To install it you need to follow the following stemps:
+- PHP: 8.4+
+- Symfony: 8.x
 
-1. Download the latest version of the bundle
+Requirements Overview
+---------------------
+
+To integrate the bundle, you need:
+
+- A custom authenticator based on Symfony's modern authenticator system
+- A controller endpoint that matches your OAuth2 redirect URI
+- A table to store PKCE state, verifier, challenge, and issued tokens
+- A bundle config file with client and server OAuth2 settings
+- Security firewall configuration that uses custom_authenticators
+
+Installation
+------------
+
+1. Install the package:
 
 ```bash
-$ composer require beyondbluesky/oauth2-pkce-client 
+composer require beyondbluesky/oauth2-pkce-client
 ```
-2. Configure the endpoints of your OAuth2 server with a file at config/packages named oauth2_pkce_client:
 
-config/packages/oauth2_pkce_client.yaml:
+2. Create the bundle config file:
+
+config/packages/oauth2_pkce_client.yaml
+
 ```yaml
 oauth2_pkce_client:
     server_uris:
-        auth_uri:   https://oauth2.localnet/oauth2/auth
-        token_uri:  https://oauth2.localnet/oauth2/token
-        owner_uri:  https://oauth2.localnet/oauth2/owner
+        auth_uri: https://oauth2.localnet/oauth2/auth
+        token_uri: https://oauth2.localnet/oauth2/token
+        owner_uri: https://oauth2.localnet/oauth2/owner
     client:
-        id: client_id_provided from our oauth2 server
-        secret: secret provided from our oauth2 server
-        scope: 'authorization_code,user_info,user_auth'
-        redirect_uri: https://oauth2client.localnet/oauth2/check
+        id: '%env(resolve:OAUTH2_CLIENT)%'
+        secret: '%env(resolve:OAUTH2_SECRET)%'
+        scope: '%env(resolve:OAUTH2_SCOPE)%'
+        redirect_uri: '%env(resolve:OAUTH2_REDIRECT)%'
+        server_cert: '%env(resolve:OAUTH2_SERVER_CERT)%'
+        cert: '%env(resolve:OAUTH2_CLIENT_CERT)%'
+        cert_key: '%env(resolve:OAUTH2_CLIENT_CERT_KEY)%'
 ```
 
-3. Create a Controller to receive the tokens, that has to match the redirect_uri path. Following we provide an example code for you to adapt:
+3. Create the OAuth2 controller with route attributes:
 
-src/Controller/OAuth2Controller.php:
+src/Controller/OAuth2Controller.php
+
 ```php
+<?php
+
 namespace App\Controller;
 
-use Symfony\Component\Routing\Annotation\Route;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
-
-use BeyondBlueSky\OAuth2PKCEClient\Entity\OAuth2Session;
+use Symfony\Component\Routing\Attribute\Route;
 use BeyondBlueSky\OAuth2PKCEClient\DependencyInjection\OAuth2PKCEClientExtension as OAuth2PKCEClient;
+use BeyondBlueSky\OAuth2PKCEClient\Entity\OAuth2Session;
 
-/**
- * Default App controller.
- *
- * @Route("/oauth2")
- */
+#[Route('/oauth2')]
 class OAuth2Controller extends AbstractController
 {
-    
-    /**
-     * @Route("/login", name="oauth_login", methods={"GET"})
-     */ 
-    public function oauthLogin(Request $request, OAuth2PKCEClient $oauth2)
+    #[Route('/login', name: 'oauth_login', methods: ['GET'])]
+    public function oauthLogin(OAuth2PKCEClient $oauth2, EntityManagerInterface $entityManager): Response
     {
-        
         $session = new OAuth2Session();
-        $response= $oauth2->getAuthRedirect($session);
+        $response = $oauth2->getAuthRedirect($session);
 
-        $this->getDoctrine()->getManager()->persist($session);
-        $this->getDoctrine()->getManager()->flush();
-        
+        $entityManager->persist($session);
+        $entityManager->flush();
+
         return $response;
     }
-    
-    /**
-     * @Route("/check", name="oauth_check", methods={"GET"})
-     */ 
-    public function oauthRedirect(Request $request)
+
+    #[Route('/check', name: 'oauth_check', methods: ['GET'])]
+    public function oauthRedirect(Request $request): Response
     {
-        $user= $this->getUser();
-        if ($user == null ) {
-            return new Response(json_encode( ['status' => false, 'message' => "User not found!"] ) );
-        } else {
-            return $this->redirectToRoute('homepage');
-        }
+        return $this->redirectToRoute('homepage');
     }
-    
 }
 ```
 
-4. Create a user class. The minimum information should be the username. All other 
-fields are optional and filled in the point 5 of this guide. In our case we'll create a Security\User inside the Entity folder.
-
-If you are new to this, I highly recommend to use the command 
-
-```bash
-$ bin/console make:entity
-```
-And follow the questions asked, adding the username field and all the fields you need for your project. 
-That will generate an ORM configured entity with all the information needed.
-
-Once you have created your user, edit it and implement the UserInterface interface to tell Symfony your user entity is a Symfony User:
+4. Create a User entity implementing modern security interfaces:
 
 ```php
-class User implements \Symfony\Component\Security\Core\User\UserInterface
+class User implements UserInterface, PasswordAuthenticatedUserInterface
+{
+    public function getUserIdentifier(): string
+    {
+        return $this->username;
+    }
 
-```
-With the implementation of the UserInterface you'll have to add a few Symfony functions:
-```php
-    public function getRoles(): array {
-        
+    public function getRoles(): array
+    {
         return ['ROLE_USER'];
     }
-    
-    public function getPassword() {
-        return "-";
+
+    public function getPassword(): string
+    {
+        return '-';
     }
-    
-    public function getSalt() {
-        return 1;
+
+    public function eraseCredentials(): void
+    {
     }
-    public function eraseCredentials() {
-        return ;
-    }
-    
-    public function getUsername(): string {
-        return $this->email;
-    }
+}
 ```
 
-5. Now we need a new Authenticator. Use to following code as a template. Take into consideration the getUser function, you'll have to fill your user object with the fields that you'll receive from your OAuth2 server.
-Yo can var_dump the oauthUser if you are not sure what you are receiving:
+5. Implement your authenticator by extending OAuth2PKCEAuthenticator:
 
-src/Security/OAuth2Authenticator.php:
+src/Security/OAuth2Authenticator.php
+
 ```php
+<?php
 
 namespace App\Security;
 
 use App\Entity\Security\User;
-
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Security\Core\User\UserProviderInterface;
-
-use Doctrine\ORM\EntityManagerInterface;
-
-use BeyondBlueSky\OAuth2PKCEClient\DependencyInjection\OAuth2PKCEClientExtension as OAuth2PKCEClient;
+use Symfony\Component\Security\Core\User\UserInterface;
 use BeyondBlueSky\OAuth2PKCEClient\Security\OAuth2PKCEAuthenticator;
 
-/**
- */
 class OAuth2Authenticator extends OAuth2PKCEAuthenticator
 {
-    public function supports(Request $request): bool{
-        return $request->getPathInfo() == '/oauth2/check' && $request->isMethod('GET');
-    }
-    
-    public function getUser($credentials, UserProviderInterface $userProvider)
+    public function supports(Request $request): bool
     {
-        // With this function we fetch the user's data from the credentials
+        return $request->getPathInfo() === '/oauth2/check' && $request->isMethod('GET');
+    }
+
+    public function getUser($credentials): ?UserInterface
+    {
         $oauthUser = $this->fetchUser($credentials);
-    
-        $login = $oauthUser->login;
-        $user = $this->em->getRepository(User::class)->findOneBy(['username' => $login]);
-            
-        if (! $user ) {
-            // Now we have to adapt to our local User 
+
+        $user = $this->em->getRepository(User::class)->findOneBy([
+            'username' => $oauthUser->login,
+        ]);
+
+        if (! $user) {
             $user = new User();
             $user->setUsername($oauthUser->login);
-            $user->setEmail($oauthUser->email);
-            $user->setName($oauthUser->name);
-            $user->setSurname1($oauthUser->surname1);
-            $user->setSurname2($oauthUser->surname2);
+            $user->setEmail($oauthUser->email ?? null);
             $user->setPassword('-');
             $user->setRoles(['ROLE_USER']);
-            //$user->setFullname($oauthUser['name']. " ".$oauthUser['surname1']. " ".$oauthUser['surname2']);
-            $user->setCreatedAt(new \DateTime(date('Y-m-d H:i:s')));
             $this->em->persist($user);
             $this->em->flush();
         }
-        return $user;   
-    }   
+
+        return $user;
+    }
 }
 ```
 
-6. Update your database schema: schema:update or doctrine:migrations, your choice.
+6. Configure security.yaml to use custom_authenticators:
 
-```sh
-$ bin/console doctrine:schema:update --force
-```
+config/packages/security.yaml
 
-7. Configure the security.yaml to point to our new authenticator
-
-On the providers section replace the in-memory line for:
-
-config/packages/security.yaml:
 ```yaml
+security:
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+
+    providers:
         oauth_user_provider:
             entity:
                 class: App\Entity\Security\User
                 property: username
-```
-And on firewalls > main refer to your new user provider and add our authenticator created at step 5:
-```yaml
+
     firewalls:
         main:
-            anonymous: lazy
+            lazy: true
             provider: oauth_user_provider
-            guard:
-                authenticators:
-                    - App\Security\OAuth2Authenticator
+            custom_authenticators:
+                - App\Security\OAuth2Authenticator
 ```
 
-8. Enjoy your new OAuth2 authentication! For that go to your Symfony root on a browser and add a oauth2/login to the URL (if you didn't change the
-paths on the OAuth2Controller). Now you should see the login page of your OAuth2 server.
+7. Create or run your Doctrine migration:
 
-Have fun!
+```bash
+php bin/console doctrine:migrations:diff
+php bin/console doctrine:migrations:migrate
+```
+
+8. Start authentication by opening:
+
+```text
+/oauth2/login
+```
+
+If your redirect URI and OAuth2 server config are correct, the PKCE login flow should start.

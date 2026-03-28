@@ -16,10 +16,14 @@ namespace BeyondBlueSky\OAuth2PKCEClient\Security;
 use Doctrine\ORM\EntityManagerInterface;
 
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Security\Core\User\UserProviderInterface;
 
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
+use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
+use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 
 use BeyondBlueSky\OAuth2PKCEClient\Entity\OAuth2Session;
 use BeyondBlueSky\OAuth2PKCEClient\DependencyInjection\OAuth2PKCEClientExtension as OAuth2PKCEClient;
@@ -71,17 +75,21 @@ abstract class OAuth2PKCEAuthenticator extends OAuth2AbstractAuthenticator
      * @param UserProviderInterface $userProvider
      * @return User
      */
-    public abstract function getUser($credentials, UserProviderInterface $userProvider);
+    public abstract function getUser($credentials): ?UserInterface;
 
-
-    public function checkCredentials($credentials, UserInterface $user): bool
+    public function authenticate(Request $request): Passport
     {
-        return true;
-    }
+        $credentials = $this->getCredentials($request);
+        $user = $this->getUser($credentials);
+        if (! $user instanceof UserInterface) {
+            throw new AuthenticationException('User not found.');
+        }
 
-    public function supportsRememberMe(): bool
-    {
-        return true;
+        $identifier = method_exists($user, 'getUserIdentifier')
+            ? $user->getUserIdentifier()
+            : $user->getUsername();
+
+        return new SelfValidatingPassport(new UserBadge($identifier, static fn () => $user));
     }
 
     /**
@@ -136,7 +144,7 @@ abstract class OAuth2PKCEAuthenticator extends OAuth2AbstractAuthenticator
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function start(Request $request, \Symfony\Component\Security\Core\Exception\AuthenticationException $authException = null)
+    public function start(Request $request, ?AuthenticationException $authException = null): Response
     {
         return new RedirectResponse('/login');
     }
@@ -155,9 +163,9 @@ abstract class OAuth2PKCEAuthenticator extends OAuth2AbstractAuthenticator
      *
      * @return \Symfony\Component\HttpFoundation\Response|null
      */
-    public function onAuthenticationFailure(Request $request, \Symfony\Component\Security\Core\Exception\AuthenticationException $exception)
+    public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
-        // TODO: Implement onAuthenticationFailure() method.
+        return null;
     }
 
     /**
@@ -175,8 +183,8 @@ abstract class OAuth2PKCEAuthenticator extends OAuth2AbstractAuthenticator
      *
      * @return void
      */
-    public function onAuthenticationSuccess(Request $request, \Symfony\Component\Security\Core\Authentication\Token\TokenInterface $token, $providerKey)
+    public function onAuthenticationSuccess(Request $request, \Symfony\Component\Security\Core\Authentication\Token\TokenInterface $token, string $firewallName): ?Response
     {
-        // TODO: Implement onAuthenticationSuccess() method.
+        return null;
     }
 }

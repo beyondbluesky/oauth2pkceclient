@@ -16,8 +16,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
-
-use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
+use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
 
 use BeyondBlueSky\OAuth2PKCEClient\Entity\OAuth2Session;
 
@@ -28,7 +27,7 @@ use BeyondBlueSky\LibJWT\DependencyInjection\JWTServiceExtension as JWTService;
 
 use BeyondBlueSky\OAuth2PKCEClient\DependencyInjection\OAuth2PKCEClientExtension as OAuth2PKCEClient;
 
-abstract class OAuth2AbstractAuthenticator extends AbstractGuardAuthenticator {
+abstract class OAuth2AbstractAuthenticator extends AbstractAuthenticator {
     
     /**
      *

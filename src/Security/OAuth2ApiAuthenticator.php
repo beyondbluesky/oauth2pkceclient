@@ -21,7 +21,9 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Security\Core\User\UserProviderInterface;
+use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
+use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
+use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 
 abstract class OAuth2ApiAuthenticator extends OAuth2AbstractAuthenticator
 {
@@ -30,7 +32,7 @@ abstract class OAuth2ApiAuthenticator extends OAuth2AbstractAuthenticator
      * used for the request. Returning `false` will cause this authenticator
      * to be skipped.
      */
-    public function supports(Request $request)
+    public function supports(Request $request): ?bool
     {
         $result = $request->headers->has('AUTHORIZATION');
         if( $result == false ) {
@@ -44,24 +46,30 @@ abstract class OAuth2ApiAuthenticator extends OAuth2AbstractAuthenticator
         return $result;
     }
 
-    public abstract function getUser($credentials, UserProviderInterface $userProvider);
+    public abstract function getUser($credentials): ?UserInterface;
 
-    public function checkCredentials($credentials, UserInterface $user)
+    public function authenticate(Request $request): Passport
     {
-        // Check credentials - e.g. make sure the password is valid.
-        // In case of an API token, no credential check is needed.
+        $credentials = $this->getCredentials($request);
+        $user = $this->getUser($credentials);
+        if (! $user instanceof UserInterface) {
+            throw new AuthenticationException('User not found.');
+        }
 
-        // Return `true` to cause authentication success
-        return true;
+        $identifier = method_exists($user, 'getUserIdentifier')
+            ? $user->getUserIdentifier()
+            : $user->getUsername();
+
+        return new SelfValidatingPassport(new UserBadge($identifier, static fn () => $user));
     }
 
-    public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
+    public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
         // on success, let the request continue
         return null;
     }
 
-    public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
+    public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
         $data = [
             // you may want to customize or obfuscate the message first
@@ -77,7 +85,7 @@ abstract class OAuth2ApiAuthenticator extends OAuth2AbstractAuthenticator
     /**
      * Called when authentication is needed, but it's not sent
      */
-    public function start(Request $request, AuthenticationException $authException = null)
+    public function start(Request $request, ?AuthenticationException $authException = null): Response
     {
         $data = [
             // you might translate this message
@@ -86,11 +94,5 @@ abstract class OAuth2ApiAuthenticator extends OAuth2AbstractAuthenticator
 
         return new JsonResponse($data, Response::HTTP_UNAUTHORIZED);
     }
-
-    public function supportsRememberMe()
-    {
-        return false;
-    }
-    
 
 }
