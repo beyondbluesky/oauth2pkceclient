@@ -110,7 +110,7 @@ class OAuth2PKCEClientExtension extends Extension {
         }
     }
     
-    public function getAlias(){
+    public function getAlias(): string {
         return "oauth2_pkce_client";
     }
     
