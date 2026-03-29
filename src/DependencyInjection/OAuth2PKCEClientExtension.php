@@ -67,7 +67,7 @@ class OAuth2PKCEClientExtension extends Extension {
        
     }
     
-    public function load(array $configs, ContainerBuilder $container)
+    public function load(array $configs, ContainerBuilder $container): void
     {
         $loader = new YamlFileLoader(
             $container,
@@ -234,7 +234,7 @@ class OAuth2PKCEClientExtension extends Extension {
                 throw new TokenNotFoundException('No code received '. json_encode($params));
             }
         }else {
-            throw new TokenNotfoundException('No redirect Uri received.');
+            throw new TokenNotFoundException('No redirect Uri received.');
         }
         return $resp;
     }

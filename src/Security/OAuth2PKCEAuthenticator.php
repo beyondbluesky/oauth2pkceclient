@@ -48,7 +48,7 @@ abstract class OAuth2PKCEAuthenticator extends OAuth2AbstractAuthenticator
         retun $request->getPathInfo() == '/oauth/check' && $request->isMethod('GET');
 
      */
-    public abstract function supports(Request $request): bool;
+    public abstract function supports(Request $request): ?bool;
     
     /**
      * Abstract function used to retrieve a User once we get the access token.
